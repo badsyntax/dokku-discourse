@@ -65,6 +65,14 @@ dokku discourse:install-plugin discourse-app https://github.com/discourse/discou
 
 ⚠️&nbsp; *The running discourse app will be stopped, the docker image rebuilt and the app redeployed.*
 
+### Destroy an app
+
+```bash
+dokku discourse:destroy discourse-app
+```
+
+⚠️&nbsp; *Destroying an app does **not** remove the data directory.*
+
 ## Development
 
 See [DEVELOPMENT.md](./DEVELOPMENT.md).

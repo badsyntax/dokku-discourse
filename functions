@@ -48,6 +48,8 @@ discourse_destroy_app() {
   declare APP_NAME="$1"
   [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
   fn-destroy-app "$APP_NAME"
+  local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
+  dokku_log_warn "Leaving data directory unchanged at $APP_STORAGE_ROOT"
   dokku_log_info2 "Discourse app '$APP_NAME' destroyed"
 }
 
