@@ -49,10 +49,8 @@ fn-config-set-volumes() {
 fn-create-default-config() {
   declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
   local APP_CONFIG="containers/$CONTAINER_NAME-$APP_NAME.yml"
-  if [[ ! -f "$APP_CONFIG" ]]; then
-    cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
-    cp "$PLUGIN_ROOT_PATH/containers/$CONTAINER_NAME.yml" "$APP_CONFIG"
-  fi
+  cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
+  cp "$PLUGIN_ROOT_PATH/containers/$CONTAINER_NAME.yml" "$APP_CONFIG"
 }
 
 fn-build-image() {
