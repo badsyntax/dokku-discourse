@@ -2,7 +2,7 @@
 
 Manage discourse on your dokku server.
 
-Each discourse app is a seperate _standalone_ discourse instance.
+Each discourse app is a separate _standalone_ discourse instance.
 
 ## Plugin installation
 

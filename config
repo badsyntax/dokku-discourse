@@ -7,5 +7,5 @@ export PLUGIN_COMMAND_PREFIX="discourse"
 export PLUGIN_ROOT_PATH
 export STORAGE_ROOT="${DOKKU_LIB_ROOT}/data/storage"
 export DISCOURSE_DOCKER_IMAGE_ROOT="$STORAGE_ROOT/discourse_docker"
-export CONTAINER_NAME="standalone"
+export CONTAINER_TYPE="standalone"
 export DISCOURSE_APPS="$DOKKU_ROOT/DISCOURSE_APPS"

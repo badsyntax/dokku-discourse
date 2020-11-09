@@ -21,13 +21,22 @@ discourse_create_app() {
 
   local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
 
-  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_NAME-$APP_NAME"
-  if [[ -z $("$DOCKER_BIN" images -q "$DISCOURSE_IMAGE_NAME:latest") ]]; then
+  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_TYPE-$APP_NAME"
+  if [[ -n $("$DOCKER_BIN" images -q "$DISCOURSE_IMAGE_NAME:latest") ]]; then
     dokku_log_warn "Discourse image $DISCOURSE_IMAGE_NAME:latest will be overwritten"
   fi
 
   fn-create-default-config "$APP_NAME" "$APP_STORAGE_ROOT"
-  fn-build-image "$APP_NAME" "$APP_STORAGE_ROOT"
+  fn-config-update-env \
+    "$APP_NAME" \
+    "$HOSTNAME" \
+    "$DEVELOPER_EMAILS" \
+    "$SMTP_ADDRESS" \
+    "$SMTP_PORT" \
+    "$SMTP_USERNAME" \
+    "$SMTP_PASSWORD"
+  fn-config-set-volumes "$APP_NAME" "$APP_STORAGE_ROOT"
+  fn-build-image "$APP_NAME"
 
   if [[ ! -d "$APP_STORAGE_ROOT" ]]; then
     fn-create-discourse-data-dir "$APP_STORAGE_ROOT"
@@ -36,14 +45,8 @@ discourse_create_app() {
     dokku_log_warn "Using existing data directory at '$APP_STORAGE_ROOT'"
   fi
 
-  fn-create-app "$APP_NAME" \
-    "$HOSTNAME" \
-    "$APP_STORAGE_ROOT" \
-    "$DEVELOPER_EMAILS" \
-    "$SMTP_ADDRESS" \
-    "$SMTP_PORT" \
-    "$SMTP_USERNAME" \
-    "$SMTP_PASSWORD"
+  fn-create-dokku-app "$APP_NAME" "$HOSTNAME" "$APP_STORAGE_ROOT"
+  fn-deploy-app "$APP_NAME"
   dokku_log_info2 "Discourse app '${APP_NAME}' created"
 }
 

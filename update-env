@@ -1,0 +1,35 @@
+#!/usr/bin/python3
+
+import sys
+from yaml import load, dump
+
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
+
+if __name__ == "__main__":
+    config_file = sys.argv[1]
+
+    lang = "en_US.UTF-8"
+    default_locale = "en"
+    hostname = sys.argv[2]
+    developer_emails = sys.argv[3]
+    smtp_address = sys.argv[4]
+    smtp_port = sys.argv[5]
+    smtp_user_name = sys.argv[6]
+    smtp_password = sys.argv[7]
+
+    with open(config_file, "r") as f:
+        data = load(f, Loader=Loader)
+        data["env"] = {
+            "LANG": lang,
+            "DISCOURSE_DEFAULT_LOCALE": default_locale,
+            "DISCOURSE_HOSTNAME": hostname,
+            "DISCOURSE_DEVELOPER_EMAILS": developer_emails,
+            "DISCOURSE_SMTP_ADDRESS": smtp_address,
+            "DISCOURSE_SMTP_PORT": smtp_port,
+            "DISCOURSE_SMTP_USER_NAME": smtp_user_name,
+            "DISCOURSE_SMTP_PASSWORD": smtp_password,
+        }
+        print(dump(data, Dumper=Dumper))
