@@ -15,8 +15,9 @@ discourse:help                            # Shows help
 discourse:create <app>                    # Creates a discourse app
 discourse:destroy <app>                   # Destroys a discourse app
 discourse:upgrade <app>                   # Upgrades a discourse app
-discourse:list                            # Lists discourse apps
+discourse:restore <app> <backup_file>     # Restores a backup for a discourse app
 discourse:install-plugin <app> <git_url>  # Installs a plugin for a discourse app
+discourse:list                            # Lists discourse apps
 ```
 
 ## Usage
@@ -38,10 +39,6 @@ Data will be stored in location `/var/lib/dokku/data/storage/APP_NAME`.
 Once your app is built & deployed, you can treat it as any other dokku app. You should use the [dokku-letsencrypt](https://github.com/dokku/dokku-letsencrypt) plugin for adding TLS.
 
 Continue with the offical [discourse install instructions](https://github.com/discourse/discourse/blob/master/docs/INSTALL-cloud.md#start-discourse) to complete the discourse installation, ignoring any TLS setup instructions.
-
-### Create from backup
-
-First create a new discourse app following the instructions above, then restore the backup in [the admin](http://discourse.dokku.me/admin/backups). [This article](https://meta.discourse.org/t/move-your-discourse-instance-to-a-different-server/15721) gives an overview of how to restore from backup.
 
 ### Upgrading discourse
 
@@ -72,6 +69,16 @@ dokku discourse:destroy discourse-app
 ```
 
 ⚠️&nbsp; *Destroying an app does **not** remove the data directory.*
+
+### Restore from backup
+
+You'll need a backup archive created by discourse, and a fresh discourse instance, so create a new discourse app following the instructions above.
+
+Discourse allows you restore a backup in [the admin](http://discourse.dokku.me/admin/backups) but this feature is limited by the nginx max body size. So you generally want to restore a backup using the cli. This plugin makes it easy for you.
+
+```bash
+dokku discourse:restore discourse-app /path/to/my-forum-backup.tar.gz
+```
 
 ## Development
 

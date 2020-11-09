@@ -154,8 +154,10 @@ fn-discourse-help-content() {
   cat <<help_content
     ${PLUGIN_COMMAND_PREFIX}:create <app>, Creates a new discourse app
     ${PLUGIN_COMMAND_PREFIX}:destroy <app>, Destroys a discourse app
-    ${PLUGIN_COMMAND_PREFIX}:list, Lists all discourse apps
+    ${PLUGIN_COMMAND_PREFIX}:upgrade <app>, Upgrades a discourse app
+    ${PLUGIN_COMMAND_PREFIX}:restore <app> <backup_fil>, Restores a backup for a discourse app
     ${PLUGIN_COMMAND_PREFIX}:install-plugin <app> <git_url>, Installs a plugin for a discourse app
+    ${PLUGIN_COMMAND_PREFIX}:list, Lists all discourse apps
 help_content
 }
 
