@@ -22,7 +22,7 @@ discourse_create_app() {
   local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
 
   # We need to build a new image for each discourse instance as we're using seperate data volume points, and the discourse
-  # image cannot be used if volumes aren't specified in the discourse confile file when bootstrapping the image.
+  # image cannot be used if volumes aren't specified in the discourse config file when bootstrapping the image.
   local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_NAME-$APP_NAME"
 
   if [[ -z $("$DOCKER_BIN" images -q "$DISCOURSE_IMAGE_NAME:latest") ]]; then
