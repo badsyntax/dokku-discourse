@@ -1,6 +1,6 @@
 # dokku-discourse
 
-Manage discourse on your dokku server. Each discourse app is a seperate _standalone_ discourse instance. 
+Manage discourse on your dokku server. Each discourse app is a seperate _standalone_ discourse instance.
 
 ## Plugin installation
 
@@ -11,10 +11,11 @@ dokku plugin:install https://github.com/badsyntax/dokku-discourse.git discourse
 ## Commands
 
 ```sh
-discourse:help           # Shows help
-discourse:create <app>   # Creates a discourse app
-discourse:destroy <app>  # Destroys a discourse app
-discourse:list           # Lists discourse apps
+discourse:help                            # Shows help
+discourse:create <app>                    # Creates a discourse app
+discourse:destroy <app>                   # Destroys a discourse app
+discourse:list                            # Lists discourse apps
+discourse:install-plugin <app> <git_url>  # Installs a plugin for a discourse app
 ```
 
 ## Usage

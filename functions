@@ -21,13 +21,13 @@ discourse_create_app() {
 
   local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
 
-  # We need to build a new image for each discourse instance as we're using seperate data volume points, and the discourse
-  # image cannot be used if volumes aren't specified in the discourse config file when bootstrapping the image.
   local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_NAME-$APP_NAME"
-
   if [[ -z $("$DOCKER_BIN" images -q "$DISCOURSE_IMAGE_NAME:latest") ]]; then
-    fn-build-image "$APP_NAME" "$APP_STORAGE_ROOT"
+    dokku_log_warn "Discourse image $DISCOURSE_IMAGE_NAME:latest will be overwritten"
   fi
+
+  fn-create-default-config "$APP_NAME" "$APP_STORAGE_ROOT"
+  fn-build-image "$APP_NAME" "$APP_STORAGE_ROOT"
 
   if [[ ! -d "$APP_STORAGE_ROOT" ]]; then
     fn-create-discourse-data-dir "$APP_STORAGE_ROOT"
@@ -61,4 +61,12 @@ discourse_list() {
     dokku_log_info2 "Discourse apps"
     cat "$DISCOURSE_APPS" 2> /dev/null
   fi
+}
+
+
+discourse_install_plugin() {
+  declare APP_NAME="$1" PLUGIN_GIT_URL="$2";
+  [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
+  [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing git_url argument"
+  fn-install-plugin "$APP_NAME" "$PLUGIN_GIT_URL"
 }

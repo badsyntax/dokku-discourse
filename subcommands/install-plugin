@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+source "$PLUGIN_AVAILABLE_PATH/discourse/functions"
+set -eo pipefail
+[[ $DOKKU_TRACE ]] && set -x
+
+discourse-install-plugin-cmd() {
+  declare desc="install-s all discourse apps"
+  shift
+  discourse_install_plugin "$@"
+}
+
+discourse-install-plugin-cmd "$@"
