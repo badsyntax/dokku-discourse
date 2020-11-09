@@ -1,10 +1,6 @@
 # dokku-discourse
 
-Manage discourse on your dokku server. _Supports multiple discourse instances._
-
-Each discourse app is a _standalone_ discourse instance. Each discourse container contains it's own redis & postgres installations and is not linked to other containers.
-
-Caution, this is ALPHA software.
+Manage discourse on your dokku server. Each discourse app is a seperate _standalone_ discourse instance. 
 
 ## Plugin installation
 
