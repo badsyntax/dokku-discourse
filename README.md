@@ -40,7 +40,7 @@ Once your app is built & deployed, you can treat it as any other dokku app. You 
 
 Continue with the offical [discourse install instructions](https://github.com/discourse/discourse/blob/master/docs/INSTALL-cloud.md#start-discourse) to complete the discourse installation, ignoring any TLS setup instructions.
 
-### Upgrading discourse
+### Upgrading a discourse app
 
 The easiest way to upgrade is to use [the admin](http://discourse.dokku.me/admin/upgrade).
 
@@ -72,12 +72,20 @@ dokku discourse:destroy discourse-app
 
 ### Restore from backup
 
-You'll need a backup archive created by discourse, and a fresh discourse instance, so create a new discourse app following the instructions above.
+Discourse allows you restore a backup in [the admin](http://discourse.dokku.me/admin/backups) but this feature is limited by the nginx max body size. So you generally want to restore a backup using the cli.
 
-Discourse allows you restore a backup in [the admin](http://discourse.dokku.me/admin/backups) but this feature is limited by the nginx max body size. So you generally want to restore a backup using the cli. This plugin makes it easy for you.
+You'll need a backup archive created by discourse, and a fresh discourse app. Follow the instructions above to create a new discourse app.
+
+Now copy your backup archive to your server. *The file must be placed within the correct dokku data directory. Substitute APP_NAME with the name of the discourse app you just created.*
 
 ```bash
-dokku discourse:restore discourse-app /path/to/my-forum-backup.tar.gz
+scp forum-backup.tar.gz root@dokku.me:/var/lib/dokku/data/storage/APP_NAME/backups/default/
+```
+
+Now you can restore the backup to the app you just created. The name must match the basename of the backup file.
+
+```bash
+dokku discourse:restore discourse-app forum-backup.tar.gz
 ```
 
 ## Development

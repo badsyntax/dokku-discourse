@@ -110,6 +110,12 @@ fn-upgrade-app() {
   fn-build-image "$APP_NAME"
 }
 
+fn-restore-app() {
+  declare APP_NAME="$1" BACKUP_FILE_NAME="$2"
+  "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher run $CONTAINER_TYPE-$APP_NAME "discourse enable_restore"
+  "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher run $CONTAINER_TYPE-$APP_NAME "discourse restore $BACKUP_FILE_NAME"
+}
+
 fn-create-dokku-app() {
   declare APP_NAME="$1" HOSTNAME="$2" APP_STORAGE_ROOT="$3"
 
