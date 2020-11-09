@@ -36,9 +36,9 @@ fn-update-discourse-build-files() {
 fn-config-set-volumes() {
   declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
   local CONFIG_FILE_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
-  local CONFIG_SET_VOLUMES_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/config-set-volumes"
+  local SET_VOLUMES_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/set-volumes"
   local UPDATED_CONFIG
-  UPDATED_CONFIG=$("$CONFIG_SET_VOLUMES_BIN_PATH" "$CONFIG_FILE_PATH" "$APP_STORAGE_ROOT" 2> /dev/null)
+  UPDATED_CONFIG=$("$SET_VOLUMES_BIN_PATH" "$CONFIG_FILE_PATH" "$APP_STORAGE_ROOT" 2> /dev/null)
   if [[ -z "$UPDATED_CONFIG" ]]; then
     dokku_log_fail "Error setting volumes in config"
   fi
@@ -55,9 +55,9 @@ fn-config-update-env() {
     SMTP_USER_NAME="$6" \
     SMTP_PASSWORD="$7"
   local CONFIG_FILE_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
-  local CONFIG_UPDATE_ENV_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/config-update-env"
+  local UPDATE_ENV_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/update-env"
   local UPDATED_CONFIG
-  UPDATED_CONFIG=$("$CONFIG_UPDATE_ENV_BIN_PATH" "$CONFIG_FILE_PATH" "$HOSTNAME" "$DEVELOPER_EMAILS" "$SMTP_ADDRESS" "$SMTP_PORT" "$SMTP_USER_NAME" "$SMTP_PASSWORD" 2> /dev/null)
+  UPDATED_CONFIG=$("$UPDATE_ENV_BIN_PATH" "$CONFIG_FILE_PATH" "$HOSTNAME" "$DEVELOPER_EMAILS" "$SMTP_ADDRESS" "$SMTP_PORT" "$SMTP_USER_NAME" "$SMTP_PASSWORD" 2> /dev/null)
   if [[ -z "$UPDATED_CONFIG" ]]; then
     dokku_log_fail "Error setting env in config"
   fi
@@ -82,9 +82,9 @@ fn-build-image() {
 fn-config-add-plugin() {
   declare APP_NAME="$1" PLUGIN_GIT_URL="$2"
   local CONFIG_FILE_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
-  local CONFIG_ADD_PLUGIN_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/config-add-plugin"
+  local ADD_PLUGIN_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/add-plugin"
   local UPDATED_CONFIG
-  UPDATED_CONFIG=$("$CONFIG_ADD_PLUGIN_BIN_PATH" "$CONFIG_FILE_PATH" "$PLUGIN_GIT_URL" 2> /dev/null)
+  UPDATED_CONFIG=$("$ADD_PLUGIN_BIN_PATH" "$CONFIG_FILE_PATH" "$PLUGIN_GIT_URL" 2> /dev/null)
   if [[ -z "$UPDATED_CONFIG" ]]; then
     dokku_log_fail "Error adding plugin to config"
   fi
