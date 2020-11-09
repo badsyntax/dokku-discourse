@@ -40,7 +40,7 @@ Continue with the offical [discourse install instructions](https://github.com/di
 
 ### Create from backup
 
-TODO
+First create a new discourse app following the instructions above, then restore the backup in the admin UI. [This article](https://meta.discourse.org/t/move-your-discourse-instance-to-a-different-server/15721) gives an overview of how to restore from backup.
 
 ### Update your apps
 
