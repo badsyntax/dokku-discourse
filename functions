@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+source "$PLUGIN_AVAILABLE_PATH/discourse/internal-functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+
+discourse_create_app() {
+  declare APP_NAME="$1" HOSTNAME="$2" DEVELOPER_EMAILS="$3" SMTP_ADDRESS="$4" SMTP_PORT="$5" SMTP_USERNAME="$6" SMTP_PASSWORD="$7"
+
+  [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
+  [[ -z "$HOSTNAME" ]] && HOSTNAME=$(fn-get-input "Hostname for your Discourse?" "discourse.dokku.me")
+  [[ -z "$DEVELOPER_EMAILS" ]] && DEVELOPER_EMAILS=$(fn-get-input "Email address for admin account(s)?" "me@example.com,you@example.com")
+  [[ -z "$SMTP_ADDRESS" ]] && SMTP_ADDRESS=$(fn-get-input "SMTP server address?" "smtp.example.com")
+  [[ -z "$SMTP_PORT" ]] && SMTP_PORT=$(fn-get-input "SMTP port?" "587")
+  [[ -z "$SMTP_USERNAME" ]] && SMTP_USERNAME=$(fn-get-input "SMTP user name?" "user@example.com")
+  [[ -z "$SMTP_PASSWORD" ]] && SMTP_PASSWORD=$(fn-get-input "SMTP password?" "password")
+
+  if [[ -z $("$DOCKER_BIN" images -q "$DISCOURSE_IMAGE_NAME:latest") ]]; then
+    fn-build-image
+  fi
+
+  local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
+  if [[ ! -d "$APP_STORAGE_ROOT" ]]; then
+    fn-create-discourse-data-dir "$APP_STORAGE_ROOT"
+    dokku_log_info1 "Data directory created at '$APP_STORAGE_ROOT'"
+  else
+    dokku_log_warn "Using existing data directory at '$APP_STORAGE_ROOT'"
+  fi
+
+  fn-create-app "$APP_NAME" "$HOSTNAME" "$APP_STORAGE_ROOT" "$DEVELOPER_EMAILS" "$SMTP_ADDRESS" "$SMTP_PORT" "$SMTP_USERNAME" "$SMTP_PASSWORD"
+  dokku_log_info2 "Discourse app '${APP_NAME}' created"
+}
+
+discourse_destroy_app() {
+  declare APP_NAME="$1"
+  [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
+  fn-destroy-app "$APP_NAME"
+  dokku_log_info2 "Discourse app '$APP_NAME' destroyed"
+}
