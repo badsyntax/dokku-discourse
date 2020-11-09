@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+source "$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)/config"
+source "$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)/internal-functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+set -eo pipefail
+[[ $DOKKU_TRACE ]] && set -x
+
+discourse-list-cmd() {
+  declare desc="lists all discourse apps"
+  if [[ ! -f "$DISCOURSE_APPS" ]]; then
+    dokku_log_warn "No discourse apps have been created"
+  else
+    dokku_log_info2 "Discourse apps"
+    cat "$DISCOURSE_APPS" 2> /dev/null
+  fi
+}
+
+discourse-list-cmd "$@"

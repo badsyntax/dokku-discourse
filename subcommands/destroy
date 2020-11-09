@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+source "$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)/config"
+source "$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)/internal-functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+set -eo pipefail
+[[ $DOKKU_TRACE ]] && set -x
+
+discourse-destroy-cmd() {
+  declare desc="destroys a discourse app"
+  declare APP_NAME="$2"
+
+  if [[ -z "$APP_NAME" ]]; then
+    dokku_log_fail "Missing app argument"
+  fi
+
+  fn-destroy-app "$APP_NAME"
+  dokku_log_info2 "Discourse app $APP_NAME destroyed"
+}
+
+discourse-destroy-cmd "$@"

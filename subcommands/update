@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+source "$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)/config"
+source "$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)/internal-functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+set -eo pipefail
+[[ $DOKKU_TRACE ]] && set -x
+
+fn-update-base-image-files() {
+  echo TODO
+}
+
+discourse-update-cmd() {
+  declare desc="updates a discourse app"
+  fn-update-base-image-files
+}
+
+discourse-update-cmd "$@"
