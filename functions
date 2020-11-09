@@ -26,6 +26,7 @@ discourse_create_app() {
     dokku_log_warn "Discourse image $DISCOURSE_IMAGE_NAME:latest will be overwritten"
   fi
 
+  fn-update-discourse-build-files
   fn-create-default-config "$APP_NAME" "$APP_STORAGE_ROOT"
   fn-config-update-env \
     "$APP_NAME" \

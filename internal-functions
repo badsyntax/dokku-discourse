@@ -74,7 +74,6 @@ fn-create-default-config() {
 
 fn-build-image() {
   declare APP_NAME="$1"
-  fn-update-discourse-build-files
   dokku_log_info1 "Creating the discourse docker image, this can take a while..."
   ./launcher bootstrap "$CONTAINER_TYPE-$APP_NAME"
 }
