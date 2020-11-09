@@ -28,7 +28,7 @@ discourse:install-plugin <app> <git_url>  # Installs a plugin for a discourse ap
 dokku discourse:create discourse-app
 ```
 
-*A new docker image will be built and this process can take some time.*
+ℹ️  *A new docker image will be built and this process can take some time.*
 
 You'll be prompted for various discourse configuration values.
 
@@ -52,7 +52,7 @@ Install the askimet plugin:
 dokku discourse:install-plugin discourse-app https://github.com/discourse/discourse-akismet
 ```
 
-*The running discourse app will be stopped, the docker image rebuilt and the app redeployed.*
+ℹ️  *The running discourse app will be stopped, the docker image rebuilt and the app redeployed.*
 
 ## License
 
