@@ -34,11 +34,9 @@ You'll be prompted for various discourse configuration values.
 
 Data will be stored in location `/var/lib/dokku/data/storage/APP_NAME`.
 
-Once your app is built & deployed, you can treat it as any other dokku app. 
+Once your app is built & deployed, you can treat it as any other dokku app. You should use the [dokku-letsencrypt](https://github.com/dokku/dokku-letsencrypt) plugin for adding TLS.
 
-You should use the [dokku-letsencrypt](https://github.com/dokku/dokku-letsencrypt) plugin for adding TLS.
-
-Continue with the offical [discourse install instructions](https://github.com/discourse/discourse/blob/master/docs/INSTALL-cloud.md#start-discourse) to complete the app creation process, ignoring any TLS setup instructions.
+Continue with the offical [discourse install instructions](https://github.com/discourse/discourse/blob/master/docs/INSTALL-cloud.md#start-discourse) to complete the discourse installation, ignoring any TLS setup instructions.
 
 ### Create from backup
 
