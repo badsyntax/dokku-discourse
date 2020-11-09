@@ -55,7 +55,8 @@ help_content
 }
 
 fn-get-run-args() {
-  "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher start-cmd "$CONTAINER_NAME"
+  declare APP_NAME="$1"
+  "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher start-cmd "$CONTAINER_NAME-$APP_NAME"
 }
 
 fn-create-app() {
@@ -75,7 +76,7 @@ fn-create-app() {
 
   dokku_log_info1 "Generating config..."
 
-  local RUN_ARGS=$(fn-get-run-args 2>&1)
+  local RUN_ARGS=$(fn-get-run-args "$APP_NAME" 2>&1)
   local MAC_ADDRESS=$(echo "$RUN_ARGS" | sed -r 's/.*--mac-address(=| )([^ ]+).*/\2/')
   local SHM_SIZE=$(echo "$RUN_ARGS" | sed -r 's/.*--shm-size(=| )([^ ]+).*/\2/')
   local ENV_VARS=$(echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | tr "\n" "\t" | sed -r 's/(\s*\-e\s*)|(\s+)/ /g' | sed -r 's/^\s*|\s*$//g')
