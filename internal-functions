@@ -35,14 +35,14 @@ fn-update-discourse-build-files() {
 
 fn-config-set-volumes() {
   declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
-  local CONFIG_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
-  local SET_VOLUMES_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/set-volumes"
+  local CONFIG_FILE_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
+  local CONFIG_SET_VOLUMES_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/config-set-volumes"
   local UPDATED_CONFIG
-  UPDATED_CONFIG=$("$SET_VOLUMES_BIN_PATH" "$CONFIG_PATH" "$APP_STORAGE_ROOT" 2> /dev/null)
+  UPDATED_CONFIG=$("$CONFIG_SET_VOLUMES_BIN_PATH" "$CONFIG_FILE_PATH" "$APP_STORAGE_ROOT" 2> /dev/null)
   if [[ -z "$UPDATED_CONFIG" ]]; then
     dokku_log_fail "Error setting volumes in config"
   fi
-  echo "$UPDATED_CONFIG" > "$CONFIG_PATH"
+  echo "$UPDATED_CONFIG" > "$CONFIG_FILE_PATH"
   dokku_log_info1 "Updated '$APP_NAME' volumes"
 }
 
@@ -54,14 +54,14 @@ fn-config-update-env() {
     SMTP_PORT="$5" \
     SMTP_USER_NAME="$6" \
     SMTP_PASSWORD="$7"
-  local CONFIG_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
-  local UPDATE_ENV_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/update-env"
+  local CONFIG_FILE_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
+  local CONFIG_UPDATE_ENV_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/config-update-env"
   local UPDATED_CONFIG
-  UPDATED_CONFIG=$("$UPDATE_ENV_BIN_PATH" "$CONFIG_PATH" "$HOSTNAME" "$DEVELOPER_EMAILS" "$SMTP_ADDRESS" "$SMTP_PORT" "$SMTP_USER_NAME" "$SMTP_PASSWORD" 2> /dev/null)
+  UPDATED_CONFIG=$("$CONFIG_UPDATE_ENV_BIN_PATH" "$CONFIG_FILE_PATH" "$HOSTNAME" "$DEVELOPER_EMAILS" "$SMTP_ADDRESS" "$SMTP_PORT" "$SMTP_USER_NAME" "$SMTP_PASSWORD" 2> /dev/null)
   if [[ -z "$UPDATED_CONFIG" ]]; then
     dokku_log_fail "Error setting env in config"
   fi
-  echo "$UPDATED_CONFIG" > "$CONFIG_PATH"
+  echo "$UPDATED_CONFIG" > "$CONFIG_FILE_PATH"
   dokku_log_info1 "Updated '$APP_NAME' env"
 }
 
@@ -81,14 +81,14 @@ fn-build-image() {
 
 fn-config-add-plugin() {
   declare APP_NAME="$1" PLUGIN_GIT_URL="$2"
-  local CONFIG_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
-  local ADD_PLUGIN_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/add-plugin"
+  local CONFIG_FILE_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
+  local CONFIG_ADD_PLUGIN_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/config-add-plugin"
   local UPDATED_CONFIG
-  UPDATED_CONFIG=$("$ADD_PLUGIN_BIN_PATH" "$CONFIG_PATH" "$PLUGIN_GIT_URL" 2> /dev/null)
+  UPDATED_CONFIG=$("$CONFIG_ADD_PLUGIN_BIN_PATH" "$CONFIG_FILE_PATH" "$PLUGIN_GIT_URL" 2> /dev/null)
   if [[ -z "$UPDATED_CONFIG" ]]; then
     dokku_log_fail "Error adding plugin to config"
   fi
-  echo "$UPDATED_CONFIG" > "$CONFIG_PATH"
+  echo "$UPDATED_CONFIG" > "$CONFIG_FILE_PATH"
   dokku_log_info1 "Updated '$APP_NAME' plugin config"
 }
 
