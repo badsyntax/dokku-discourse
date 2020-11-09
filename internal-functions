@@ -33,25 +33,65 @@ fn-update-discourse-build-files() {
   fi
 }
 
+fn-config-set-volumes() {
+  declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
+  local CONFIG_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_NAME-$APP_NAME.yml"
+  local SET_VOLUMES_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/set-volumes"
+  local UPDATED_CONFIG
+  UPDATED_CONFIG=$("$SET_VOLUMES_BIN_PATH" "$CONFIG_PATH" "$APP_STORAGE_ROOT" 2> /dev/null)
+  if [[ -z "$UPDATED_CONFIG" ]]; then
+    dokku_log_fail "Error setting volumes in config"
+  fi
+  echo "$UPDATED_CONFIG" > "$CONFIG_PATH"
+  dokku_log_info1 "Updated '$APP_NAME' volumes"
+}
+
+fn-create-default-config() {
+  declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
+  local APP_CONFIG="containers/$CONTAINER_NAME-$APP_NAME.yml"
+  cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
+  cp "$PLUGIN_ROOT_PATH/containers/$CONTAINER_NAME.yml" "$APP_CONFIG"
+}
+
 fn-build-image() {
   declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
   fn-update-discourse-build-files
-  cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
-  cp "$PLUGIN_ROOT_PATH/containers/$CONTAINER_NAME.yml" "containers/$CONTAINER_NAME-$APP_NAME.yml"
-
-  (cat <<help_content
-volumes:
-  - volume:
-      host: $APP_STORAGE_ROOT
-      guest: /shared
-  - volume:
-      host: $APP_STORAGE_ROOT/log/var-log
-      guest: /var/log
-help_content
-) >> "containers/$CONTAINER_NAME-$APP_NAME.yml"
-
+  fn-config-set-volumes "$APP_NAME" "$APP_STORAGE_ROOT"
   dokku_log_info1 "Creating the discourse docker image, this can take a while..."
   ./launcher bootstrap "$CONTAINER_NAME-$APP_NAME"
+}
+
+fn-config-add-plugin() {
+  declare APP_NAME="$1" PLUGIN_GIT_URL="$2"
+  local CONFIG_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_NAME-$APP_NAME.yml"
+  local ADD_PLUGIN_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/add-plugin"
+  local UPDATED_CONFIG
+  UPDATED_CONFIG=$("$ADD_PLUGIN_BIN_PATH" "$CONFIG_PATH" "$PLUGIN_GIT_URL" 2> /dev/null)
+  if [[ -z "$UPDATED_CONFIG" ]]; then
+    dokku_log_fail "Error adding plugin to config"
+  fi
+  echo "$UPDATED_CONFIG" > "$CONFIG_PATH"
+  dokku_log_info1 "Updated '$APP_NAME' plugin config"
+}
+
+fn-deploy-app() {
+  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_NAME-$APP_NAME"
+  "$DOCKER_BIN" tag "$DISCOURSE_IMAGE_NAME:latest" "dokku/$APP_NAME:latest"
+  dokku tags:deploy "$APP_NAME" latest
+}
+
+fn-install-plugin() {
+  declare APP_NAME="$1" PLUGIN_GIT_URL="$2"
+  dokku apps:exists "$APP_NAME"
+
+  dokku ps:stop "$APP_NAME"
+
+  fn-config-add-plugin "$APP_NAME" "$PLUGIN_GIT_URL"
+
+  local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
+  fn-build-image "$APP_NAME" "$APP_STORAGE_ROOT"
+
+  fn-deploy-app "$APP_NAME"
 }
 
 fn-get-run-args() {
@@ -102,9 +142,7 @@ fn-create-app() {
   dokku docker-options:add "$APP_NAME" run,deploy "--mac-address $MAC_ADDRESS"
   dokku ps:set-restart-policy "$APP_NAME" always
 
-  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_NAME-$APP_NAME"
-  "$DOCKER_BIN" tag "$DISCOURSE_IMAGE_NAME:latest" "dokku/$APP_NAME:latest"
-  dokku tags:deploy "$APP_NAME" latest
+  fn-deploy-app "$APP_NAME"
 }
 
 fn-destroy-app() {
@@ -121,6 +159,7 @@ fn-discourse-help-content() {
     ${PLUGIN_COMMAND_PREFIX}:create <app>, Creates a new discourse app
     ${PLUGIN_COMMAND_PREFIX}:destroy <app>, Destroys a discourse app
     ${PLUGIN_COMMAND_PREFIX}:list, Lists all discourse apps
+    ${PLUGIN_COMMAND_PREFIX}:install-plugin <app> <git_url>, Installs a plugin for a discourse app
 help_content
 }
 

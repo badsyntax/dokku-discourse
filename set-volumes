@@ -1,0 +1,32 @@
+#!/usr/bin/python3
+
+import sys
+from yaml import load, dump
+
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
+if __name__ == "__main__":
+    config_file = sys.argv[1]
+    app_storage_root = sys.argv[2]
+
+    with open(config_file, "r") as f:
+        data = load(f, Loader=Loader)
+        volumes = [
+            {
+                "volume": {
+                    "host": app_storage_root,
+                    "guest": "/shared",
+                }
+            },
+            {
+                "volume": {
+                    "host": "{}/log/var-log".format(app_storage_root),
+                    "guest": "/var/log",
+                }
+            },
+        ]
+        data['volumes'] = volumes
+        print(dump(data))
