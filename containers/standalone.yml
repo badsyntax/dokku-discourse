@@ -34,7 +34,7 @@ params:
   #version: tests-passed
 
 env:
-  LANG: en_US.UTF-8
+  # LANG: en_US.UTF-8
   # DISCOURSE_DEFAULT_LOCALE: en
 
   ## How many concurrent web requests are supported? Depends on memory and CPU cores.

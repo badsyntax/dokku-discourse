@@ -1,6 +1,10 @@
 # How to develop this plugin
 
-Create new directory in the dokku project, eg `plugins/discourse`
+## Getting started
+
+Move the plugin directory into the dokku repo at location `plugins/discourse`.
+
+Change directory to the root of the dokku repo.
 
 Start the dokku VM using vagrant:
 
@@ -15,9 +19,10 @@ vagrant ssh
 
 # or
 ssh root@dokku.me
+su - dokku
 ```
 
-Symlink the plugin:
+Link the plugin:
 
 ```bash
 cd /var/lib/dokku/plugins/available
@@ -31,6 +36,8 @@ dokku plugin:enable discourse
 ```
 
 Now you can work on the plugin from your host machine and run the plugin in the dokku VM.
+
+## Debugging
 
 View logs:
 

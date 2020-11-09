@@ -4,9 +4,9 @@ import sys
 from yaml import load, dump
 
 try:
-    from yaml import CLoader as Loader
+    from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
-    from yaml import Loader
+    from yaml import Loader, Dumper
 
 if __name__ == "__main__":
     config_file = sys.argv[1]
@@ -29,4 +29,4 @@ if __name__ == "__main__":
             },
         ]
         data['volumes'] = volumes
-        print(dump(data))
+        print(dump(data, Dumper=Dumper))
