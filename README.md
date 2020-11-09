@@ -16,6 +16,7 @@ dokku plugin:install https://github.com/badsyntax/dokku-discourse.git discourse
 discourse:help                            # Shows help
 discourse:create <app>                    # Creates a discourse app
 discourse:destroy <app>                   # Destroys a discourse app
+discourse:upgrade <app>                   # Upgrades a discourse app
 discourse:list                            # Lists discourse apps
 discourse:install-plugin <app> <git_url>  # Installs a plugin for a discourse app
 ```
@@ -28,7 +29,7 @@ discourse:install-plugin <app> <git_url>  # Installs a plugin for a discourse ap
 dokku discourse:create discourse-app
 ```
 
-:warning:&nbsp; *A new docker image will be built and this process can take some time.*
+⚠️&nbsp; *A new docker image will be built and this process can take some time.*
 
 You'll be prompted for various discourse configuration values.
 
@@ -40,11 +41,19 @@ Continue with the offical [discourse install instructions](https://github.com/di
 
 ### Create from backup
 
-First create a new discourse app following the instructions above, then restore the backup in the admin UI. [This article](https://meta.discourse.org/t/move-your-discourse-instance-to-a-different-server/15721) gives an overview of how to restore from backup.
+First create a new discourse app following the instructions above, then restore the backup in [the admin](http://discourse.dokku.me/admin/backups). [This article](https://meta.discourse.org/t/move-your-discourse-instance-to-a-different-server/15721) gives an overview of how to restore from backup.
 
-### Update your apps
+### Upgrading discourse
 
-TODO
+The easiest way to upgrade is to use [the admin](http://discourse.dokku.me/admin/upgrade).
+
+You can also upgrade a discourse app with the following:
+
+```bash
+dokku discourse:upgrade discourse-app
+```
+
+⚠️&nbsp; *The running discourse app will be stopped, the docker image rebuilt and the app redeployed.*
 
 ### Add discourse plugins
 
@@ -54,8 +63,12 @@ Install the askimet plugin:
 dokku discourse:install-plugin discourse-app https://github.com/discourse/discourse-akismet
 ```
 
-:warning:&nbsp; *The running discourse app will be stopped, the docker image rebuilt and the app redeployed.*
+⚠️&nbsp; *The running discourse app will be stopped, the docker image rebuilt and the app redeployed.*
+
+## Development
+
+See [DEVELOPMENT.md](./DEVELOPMENT.md).
 
 ## License
 
-[MIT](./LICENSE.md)
+See [LICENSE.md](./LICENSE.md).
