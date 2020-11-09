@@ -52,8 +52,6 @@ help_content
 
   dokku_log_info1 "Creating the discourse docker image, this can take a while..."
   ./launcher bootstrap "$CONTAINER_NAME-$APP_NAME"
-
-  rm "containers/$CONTAINER_NAME-$APP_NAME.yml"
 }
 
 fn-get-run-args() {
@@ -114,6 +112,7 @@ fn-destroy-app() {
   sed -i "/^$APP_NAME$/d" "$DISCOURSE_APPS"
   local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_NAME-$APP_NAME"
   docker rmi "$DISCOURSE_IMAGE_NAME"
+  rm "$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_NAME-$APP_NAME.yml"
 }
 
 fn-discourse-help-content() {
