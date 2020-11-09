@@ -33,9 +33,9 @@ discourse-create-cmd() {
 
   local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
 
-  # if [[ -z $(docker images -q "$DISCOURSE_IMAGE_NAME:latest") ]]; then
+  if [[ -z $(docker images -q "$DISCOURSE_IMAGE_NAME:latest") ]]; then
     fn-build-image
-  # fi
+  fi
 
   if [[ ! -d "$APP_STORAGE_ROOT" ]]; then
     fn-create-discourse-data-dir "$APP_STORAGE_ROOT"
