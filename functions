@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+source "$PLUGIN_AVAILABLE_PATH/discourse/internal-functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+
+discourse_create_app() {
+  declare APP_NAME="$1" \
+    HOSTNAME="$2" \
+    DEVELOPER_EMAILS="$3" \
+    SMTP_ADDRESS="$4" \
+    SMTP_PORT="$5" \
+    SMTP_USERNAME="$6" \
+    SMTP_PASSWORD="$7"
+
+  [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
+  [[ -z "$HOSTNAME" ]] && HOSTNAME=$(fn-get-input "Hostname for your Discourse?" "discourse.dokku.me")
+  [[ -z "$DEVELOPER_EMAILS" ]] && DEVELOPER_EMAILS=$(fn-get-input "Email address for admin account(s)?" "me@example.com,you@example.com")
+  [[ -z "$SMTP_ADDRESS" ]] && SMTP_ADDRESS=$(fn-get-input "SMTP server address?" "smtp.example.com")
+  [[ -z "$SMTP_PORT" ]] && SMTP_PORT=$(fn-get-input "SMTP port?" "587")
+  [[ -z "$SMTP_USERNAME" ]] && SMTP_USERNAME=$(fn-get-input "SMTP user name?" "user@example.com")
+  [[ -z "$SMTP_PASSWORD" ]] && SMTP_PASSWORD=$(fn-get-input "SMTP password?" "password")
+
+  local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
+
+  # We need to build a new image for each discourse instance as we're using seperate data volume points, and the discourse
+  # image cannot be used if volumes aren't specified in the discourse confile file when bootstrapping the image.
+  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_NAME-$APP_NAME"
+
+  if [[ -z $("$DOCKER_BIN" images -q "$DISCOURSE_IMAGE_NAME:latest") ]]; then
+    fn-build-image "$APP_NAME" "$APP_STORAGE_ROOT"
+  fi
+
+  if [[ ! -d "$APP_STORAGE_ROOT" ]]; then
+    fn-create-discourse-data-dir "$APP_STORAGE_ROOT"
+    dokku_log_info1 "Data directory created at '$APP_STORAGE_ROOT'"
+  else
+    dokku_log_warn "Using existing data directory at '$APP_STORAGE_ROOT'"
+  fi
+
+  fn-create-app "$APP_NAME" \
+    "$HOSTNAME" \
+    "$APP_STORAGE_ROOT" \
+    "$DEVELOPER_EMAILS" \
+    "$SMTP_ADDRESS" \
+    "$SMTP_PORT" \
+    "$SMTP_USERNAME" \
+    "$SMTP_PASSWORD"
+  dokku_log_info2 "Discourse app '${APP_NAME}' created"
+}
+
+discourse_destroy_app() {
+  declare APP_NAME="$1"
+  [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
+  fn-destroy-app "$APP_NAME"
+  dokku_log_info2 "Discourse app '$APP_NAME' destroyed"
+}
+
+discourse_list() {
+  if [[ ! -f "$DISCOURSE_APPS" ]]; then
+    dokku_log_warn "No discourse apps have been created"
+  else
+    dokku_log_info2 "Discourse apps"
+    cat "$DISCOURSE_APPS" 2> /dev/null
+  fi
+}

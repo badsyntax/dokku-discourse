@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-source "$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)/config"
-source "$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)/internal-functions"
+source "$PLUGIN_AVAILABLE_PATH/discourse/config"
+source "$PLUGIN_AVAILABLE_PATH/discourse/internal-functions"
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
 set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x

@@ -1,11 +1,22 @@
 #!/usr/bin/env bash
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/config"
+source "$PLUGIN_AVAILABLE_PATH/discourse/config"
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/domains/functions"
+
 set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
 
+fn-get-input() {
+  declare MESSAGE="$1" DEFAULT="$2"
+  read -p "$MESSAGE [$DEFAULT]: " input
+  if [[ -z "$input" ]]; then
+    echo "$DEFAULT"
+  else
+    echo "$input"
+  fi
+}
+
 fn-create-discourse-data-dir() {
-  declare desc="create the discoure data directory"
   declare DATA_DIR="$1"
   mkdir -p "$DATA_DIR"
   chown -R dokku:dokku "$DATA_DIR"
@@ -23,11 +34,26 @@ fn-update-discourse-build-files() {
 }
 
 fn-build-image() {
+  declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
   fn-update-discourse-build-files
   cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
-  cp "$PLUGIN_ROOT_PATH/containers/standalone.yml" containers/standalone.yml
+  cp "$PLUGIN_ROOT_PATH/containers/$CONTAINER_NAME.yml" "containers/$CONTAINER_NAME-$APP_NAME.yml"
+
+  (cat <<help_content
+volumes:
+  - volume:
+      host: $APP_STORAGE_ROOT
+      guest: /shared
+  - volume:
+      host: $APP_STORAGE_ROOT/log/var-log
+      guest: /var/log
+help_content
+) >> "containers/$CONTAINER_NAME-$APP_NAME.yml"
+
   dokku_log_info1 "Creating the discourse docker image, this can take a while..."
-  ./launcher bootstrap "$CONTAINER_NAME"
+  ./launcher bootstrap "$CONTAINER_NAME-$APP_NAME"
+
+  rm "containers/$CONTAINER_NAME-$APP_NAME.yml"
 }
 
 fn-get-run-args() {
@@ -49,16 +75,16 @@ fn-create-app() {
   dokku apps:create "$APP_NAME"
   echo "$APP_NAME" >> "$DISCOURSE_APPS"
 
-  dokku domains:set "$APP_NAME" "$HOSTNAME"
-  dokku proxy:ports-add "$APP_NAME" http:80:80
-  dokku proxy:ports-remove "$APP_NAME" http:80:5000
-
   dokku_log_info1 "Generating config..."
-  local RUN_ARGS=$(fn-get-run-args 2>&1)
 
+  local RUN_ARGS=$(fn-get-run-args 2>&1)
   local MAC_ADDRESS=$(echo "$RUN_ARGS" | sed -r 's/.*--mac-address(=| )([^ ]+).*/\2/')
   local SHM_SIZE=$(echo "$RUN_ARGS" | sed -r 's/.*--shm-size(=| )([^ ]+).*/\2/')
   local ENV_VARS=$(echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | tr "\n" "\t" | sed -r 's/(\s*\-e\s*)|(\s+)/ /g' | sed -r 's/^\s*|\s*$//g')
+
+  dokku domains:set "$APP_NAME" "$HOSTNAME"
+  dokku proxy:ports-add "$APP_NAME" http:80:80       # add correct port mapping
+  dokku proxy:ports-remove "$APP_NAME" http:80:5000  # remove default port mapping as a result of calling domains:set
 
   dokku config:set --no-restart "$APP_NAME" $ENV_VARS \
     DISCOURSE_HOSTNAME="$HOSTNAME" \
@@ -77,27 +103,28 @@ fn-create-app() {
   dokku docker-options:add "$APP_NAME" run,deploy "--mac-address $MAC_ADDRESS"
   dokku ps:set-restart-policy "$APP_NAME" always
 
-  docker tag "$DISCOURSE_IMAGE_NAME:latest" "dokku/$APP_NAME:latest"
+  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_NAME-$APP_NAME"
+  "$DOCKER_BIN" tag "$DISCOURSE_IMAGE_NAME:latest" "dokku/$APP_NAME:latest"
   dokku tags:deploy "$APP_NAME" latest
 }
 
 fn-destroy-app() {
-  declare desc="destroys a discourse app"
   declare APP_NAME="$1"
   dokku apps:destroy "$APP_NAME"
   sed -i "/^$APP_NAME$/d" "$DISCOURSE_APPS"
+  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_NAME-$APP_NAME"
+  docker rmi "$DISCOURSE_IMAGE_NAME"
 }
 
-fn-registry-help-content() {
-  declare desc="return help content"
+fn-discourse-help-content() {
   cat <<help_content
-    ${PLUGIN_COMMAND_PREFIX}:create <app> <hostname> <developer_emails> <smtp_address> <smtp_port> <smtp_username> <smtp_password>, Creates a new discourse app
+    ${PLUGIN_COMMAND_PREFIX}:create <app>, Creates a new discourse app
     ${PLUGIN_COMMAND_PREFIX}:destroy <app>, Destroys a discourse app
     ${PLUGIN_COMMAND_PREFIX}:list, Lists all discourse apps
 help_content
 }
 
-cmd-registry-help() {
+cmd-discourse-help() {
   if [[ $1 == "${PLUGIN_COMMAND_PREFIX}:help" ]]; then
     echo -e "Usage: dokku ${PLUGIN_COMMAND_PREFIX}[:COMMAND] [<app>]"
     echo ''
@@ -108,9 +135,9 @@ cmd-registry-help() {
     echo "\$ dokku ${PLUGIN_COMMAND_PREFIX}:create app"
     echo ''
     echo 'Commands:'
-    fn-registry-help-content | sort | column -c2 -t -s,
+    fn-discourse-help-content | sort | column -c2 -t -s,
   elif [[ $(ps -o command= $PPID) == *"--all"* ]]; then
-    fn-registry-help-content
+    fn-discourse-help-content
   else
     cat <<help_desc
     ${PLUGIN_COMMAND_PREFIX}, Plugin for managing discourse apps

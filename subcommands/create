@@ -1,49 +1,12 @@
 #!/usr/bin/env bash
-source "$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)/config"
-source "$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)/internal-functions"
-source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+source "$PLUGIN_AVAILABLE_PATH/discourse/functions"
 set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
 
 discourse-create-cmd() {
   declare desc="creates a discourse app"
-  declare APP_NAME="$2" HOSTNAME="$3" DEVELOPER_EMAILS="$4" SMTP_ADDRESS="$5" SMTP_PORT="$6" SMTP_USERNAME="$7" SMTP_PASSWORD="$8"
-
-  if [[ -z "$APP_NAME" ]]; then
-    dokku_log_fail "Missing app argument"
-  fi
-  if [[ -z "$HOSTNAME" ]]; then
-    dokku_log_fail "Missing hostname argument"
-  fi
-  if [[ -z "$DEVELOPER_EMAILS" ]]; then
-    dokku_log_fail "Missing developer_emails argument"
-  fi
-  if [[ -z "$SMTP_ADDRESS" ]]; then
-    dokku_log_fail "Missing smtp_address argument"
-  fi
-  if [[ -z "$SMTP_PORT" ]]; then
-    dokku_log_fail "Missing smtp_port argument"
-  fi
-  if [[ -z "$SMTP_USERNAME" ]]; then
-    dokku_log_fail "Missing smtp_username argument"
-  fi
-  if [[ -z "$SMTP_PASSWORD" ]]; then
-    dokku_log_fail "Missing smtp_password argument"
-  fi
-
-  local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
-
-  if [[ -z $(docker images -q "$DISCOURSE_IMAGE_NAME:latest") ]]; then
-    fn-build-image
-  fi
-
-  if [[ ! -d "$APP_STORAGE_ROOT" ]]; then
-    fn-create-discourse-data-dir "$APP_STORAGE_ROOT"
-    dokku_log_info1 "Data directory created at '$APP_STORAGE_ROOT'"
-  fi
-
-  fn-create-app "$APP_NAME" "$HOSTNAME" "$APP_STORAGE_ROOT" "$DEVELOPER_EMAILS" "$SMTP_ADDRESS" "$SMTP_PORT" "$SMTP_USERNAME" "$SMTP_PASSWORD"
-  dokku_log_info2 "Discourse app '${APP_NAME}' created"
+  shift
+  discourse_create_app "$@"
 }
 
 discourse-create-cmd "$@"
