@@ -25,11 +25,9 @@ discourse:list           # Lists discourse apps
 dokku discourse:create discourse-app
 ```
 
-You'll be prompted for various discourse configuration values, like SMTP details.
+You'll be prompted for various discourse configuration values.
 
-(You can supply the config values with the following create arguments: `<app_name> <hostname> <developer_emails> <smtp_address> <smtp_port> <smtp_username> <smtp_password>`.)
-
-Data will be stored in the host directory `/var/lib/dokku/data/storage/APP_NAME`.
+Data will be stored in location `/var/lib/dokku/data/storage/APP_NAME`.
 
 </details>
 
