@@ -16,12 +16,6 @@ fn-get-input() {
   fi
 }
 
-fn-create-discourse-data-dir() {
-  declare DATA_DIR="$1"
-  mkdir -p "$DATA_DIR"
-  chown -R dokku:dokku "$DATA_DIR"
-}
-
 fn-update-discourse-build-files() {
   if [[ -d "$DISCOURSE_DOCKER_IMAGE_ROOT" ]]; then
     cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
@@ -33,7 +27,7 @@ fn-update-discourse-build-files() {
   fi
 }
 
-fn-config-set-volumes() {
+fn-discourse-config-set-volumes() {
   declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
   local CONFIG_FILE_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
   local SET_VOLUMES_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/set-volumes"
@@ -46,7 +40,7 @@ fn-config-set-volumes() {
   dokku_log_info1 "Updated '$APP_NAME' volumes"
 }
 
-fn-config-update-env() {
+fn-discourse-config-update-env() {
   declare APP_NAME="$1" \
     HOSTNAME="$2" \
     DEVELOPER_EMAILS="$3" \
@@ -65,7 +59,7 @@ fn-config-update-env() {
   dokku_log_info1 "Updated '$APP_NAME' env"
 }
 
-fn-create-default-config() {
+fn-create-discourse-default-config() {
   declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
   local APP_CONFIG="containers/$CONTAINER_TYPE-$APP_NAME.yml"
   cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
@@ -79,7 +73,7 @@ fn-build-image() {
   ./launcher bootstrap "$CONTAINER_TYPE-$APP_NAME"
 }
 
-fn-config-add-plugin() {
+fn-discourse-config-add-plugin() {
   declare APP_NAME="$1" PLUGIN_GIT_URL="$2"
   local CONFIG_FILE_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
   local ADD_PLUGIN_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/add-plugin"
@@ -100,18 +94,20 @@ fn-deploy-app() {
 
 fn-install-plugin() {
   declare APP_NAME="$1" PLUGIN_GIT_URL="$2"
-  dokku apps:exists "$APP_NAME"
-  dokku ps:stop "$APP_NAME"
-
-  fn-config-add-plugin "$APP_NAME" "$PLUGIN_GIT_URL"
+  fn-discourse-config-add-plugin "$APP_NAME" "$PLUGIN_GIT_URL"
   local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
   fn-build-image "$APP_NAME" "$APP_STORAGE_ROOT"
-  fn-deploy-app "$APP_NAME"
 }
 
 fn-get-run-args() {
   declare APP_NAME="$1"
   "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher start-cmd "$CONTAINER_TYPE-$APP_NAME"
+}
+
+fn-upgrade-app() {
+  declare APP_NAME="$1"
+  fn-update-discourse-build-files
+  fn-build-image "$APP_NAME"
 }
 
 fn-create-dokku-app() {

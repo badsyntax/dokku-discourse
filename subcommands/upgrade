@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+source "$PLUGIN_AVAILABLE_PATH/discourse/functions"
+set -eo pipefail
+[[ $DOKKU_TRACE ]] && set -x
+
+discourse-upgrade-cmd() {
+  declare desc="upgrades a discourse app"
+  shift
+  discourse_upgrade_app "$1"
+}
+
+discourse-upgrade-cmd "$@"
