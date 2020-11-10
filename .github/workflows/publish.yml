@@ -1,0 +1,25 @@
+# name: Publish
+# on:
+#   release:
+#     types: [published]
+
+# jobs:
+#   publish:
+#     name: Publish
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Setup SSH
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+#           chmod 600 ~/.ssh/id_rsa
+#           ssh-keyscan ${{ secrets.DOKKU_HOST }} >> ~/.ssh/known_hosts
+#       - name: Login to GitHub Container Registry
+#         run: |
+#           echo ${{ secrets.CONTAINER_REGISTRY_GITHUB_TOKEN }} | docker login ghcr.io -u ${{ secrets.USERNAME_GITHUB }} --password-stdin
+#       - name: Build docker image
+#         run: docker build -t dokku/${{ secrets.DOKKU_APP_NAME }}:latest .
+#       - name: Deploy app
+#         run: |
+#           docker save dokku/${{ secrets.DOKKU_APP_NAME }}:latest | ssh root@${{ secrets.DOKKU_HOST }} "docker load | dokku tags:deploy ${{ secrets.DOKKU_APP_NAME }} latest"
