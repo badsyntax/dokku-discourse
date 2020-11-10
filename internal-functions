@@ -112,8 +112,10 @@ fn-upgrade-app() {
 
 fn-restore-app() {
   declare APP_NAME="$1" BACKUP_FILE_NAME="$2"
-  "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher run $CONTAINER_TYPE-$APP_NAME "discourse enable_restore"
-  "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher run $CONTAINER_TYPE-$APP_NAME "discourse restore $BACKUP_FILE_NAME"
+  ## FIXME
+  ## need to use docker exec
+  # "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher run $CONTAINER_TYPE-$APP_NAME "discourse enable_restore"
+  # "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher run $CONTAINER_TYPE-$APP_NAME "discourse restore $BACKUP_FILE_NAME"
 }
 
 fn-create-dokku-app() {

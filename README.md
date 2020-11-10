@@ -40,7 +40,7 @@ Once your app is built & deployed, you can treat it as any other dokku app. You 
 
 Continue with the offical [discourse install instructions](https://github.com/discourse/discourse/blob/master/docs/INSTALL-cloud.md#start-discourse) to complete the discourse installation, ignoring any TLS setup instructions.
 
-### Upgrading a discourse app
+### Upgrade a discourse app
 
 The easiest way to upgrade is to use [the admin](http://discourse.dokku.me/admin/upgrade).
 
@@ -76,7 +76,9 @@ Discourse allows you restore a backup in [the admin](http://discourse.dokku.me/a
 
 You'll need a backup archive created by discourse, and a fresh discourse app. Follow the instructions above to create a new discourse app.
 
-Now copy your backup archive to your server. *The file must be placed within the correct dokku data directory. Substitute APP_NAME with the name of the discourse app you just created.*
+Now copy your backup archive to your server.
+
+⚠️&nbsp; *The file must be placed within the correct dokku data directory. Substitute APP_NAME with the name of the discourse app you just created.*
 
 ```bash
 scp forum-backup.tar.gz root@dokku.me:/var/lib/dokku/data/storage/APP_NAME/backups/default/
