@@ -1,5 +1,7 @@
 # dokku-discourse
 
+![Analyze](https://github.com/badsyntax/dokku-discourse/workflows/Analyze/badge.svg)
+
 Manages discourse apps on your dokku server.
 
 ## Plugin installation
