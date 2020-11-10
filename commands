@@ -6,7 +6,7 @@ set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
 
 case "$1" in
-  help | $PLUGIN_COMMAND_PREFIX:help)
+  help | "$PLUGIN_COMMAND_PREFIX:help")
     cmd-discourse-help "$@"
     ;;
 

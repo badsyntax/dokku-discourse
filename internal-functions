@@ -9,7 +9,7 @@ set -eo pipefail
 
 fn-get-input() {
   declare MESSAGE="$1" DEFAULT="$2"
-  read -p "$MESSAGE [$DEFAULT]: " input
+  read -rp "$MESSAGE [$DEFAULT]: " input
   if [[ -z "$input" ]]; then
     echo "$DEFAULT"
   else
@@ -136,6 +136,7 @@ fn-create-dokku-app() {
   dokku proxy:ports-add "$APP_NAME" http:80:80       # add correct port mapping
   dokku proxy:ports-remove "$APP_NAME" http:80:5000  # remove default port mapping as a result of calling domains:set
 
+  # shellcheck disable=SC2086
   config_set --no-restart "$APP_NAME" $ENV_VARS
 
   ## TODO: call plugin functions instead of dokku

@@ -4,6 +4,7 @@ set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
 
 discourse-list-cmd() {
+  # shellcheck disable=SC2034
   declare desc="lists all discourse apps"
   discourse_list
 }
