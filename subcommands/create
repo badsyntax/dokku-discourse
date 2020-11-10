@@ -4,6 +4,7 @@ set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
 
 discourse-create-cmd() {
+  # shellcheck disable=SC2034
   declare desc="creates a discourse app"
   shift
   discourse_create_app "$@"

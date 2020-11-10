@@ -2,13 +2,14 @@
 source "$PLUGIN_AVAILABLE_PATH/discourse/config"
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
 source "$PLUGIN_CORE_AVAILABLE_PATH/domains/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
 
 set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
 
 fn-get-input() {
   declare MESSAGE="$1" DEFAULT="$2"
-  read -p "$MESSAGE [$DEFAULT]: " input
+  read -rp "$MESSAGE [$DEFAULT]: " input
   if [[ -z "$input" ]]; then
     echo "$DEFAULT"
   else
@@ -87,9 +88,14 @@ fn-discourse-config-add-plugin() {
 }
 
 fn-deploy-app() {
+  declare APP_NAME="$1"
+  verify_app_name "$APP_NAME"
   local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_TYPE-$APP_NAME"
   "$DOCKER_BIN" tag "$DISCOURSE_IMAGE_NAME:latest" "dokku/$APP_NAME:latest"
-  dokku tags:deploy "$APP_NAME" latest
+  local IMAGE;
+  IMAGE="$(get_app_image_name "$APP_NAME" latest)"
+  verify_image "$IMAGE" || return 1
+  release_and_deploy "$APP_NAME" "$IMAGE_TAG"
 }
 
 fn-install-plugin() {
@@ -113,9 +119,7 @@ fn-upgrade-app() {
 fn-create-dokku-app() {
   declare APP_NAME="$1" HOSTNAME="$2" APP_STORAGE_ROOT="$3"
 
-  dokku_log_info1 "Creating new discourse app '${APP_NAME}'"
-
-  dokku apps:create "$APP_NAME"
+  plugn trigger app-create "$APP_NAME"
   echo "$APP_NAME" >> "$DISCOURSE_APPS"
 
   dokku_log_info1 "Generating config..."
@@ -126,27 +130,35 @@ fn-create-dokku-app() {
   SHM_SIZE=$(echo "$RUN_ARGS" | sed -r 's/.*--shm-size(=| )([^ ]+).*/\2/')
   ENV_VARS=$(echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | tr "\n" "\t" | sed -r 's/(\s*\-e\s*)|(\s+)/ /g' | sed -r 's/^\s*|\s*$//g')
 
-  dokku domains:set "$APP_NAME" "$HOSTNAME"
+  domains_set "$APP_NAME" "$HOSTNAME"
+
+  ## TODO: call plugin functions instead of dokku
   dokku proxy:ports-add "$APP_NAME" http:80:80       # add correct port mapping
   dokku proxy:ports-remove "$APP_NAME" http:80:5000  # remove default port mapping as a result of calling domains:set
 
-  dokku config:set --no-restart "$APP_NAME" $ENV_VARS
+  # shellcheck disable=SC2086
+  config_set --no-restart "$APP_NAME" $ENV_VARS
+
+  ## TODO: call plugin functions instead of dokku
   dokku storage:mount "$APP_NAME" "$APP_STORAGE_ROOT":/shared
   dokku storage:mount "$APP_NAME" "$APP_STORAGE_ROOT/log/var-log":/var/log
 
+  ## TODO: call plugin functions instead of dokku
   dokku docker-options:add "$APP_NAME" run,deploy "--entrypoint /sbin/boot"
   dokku docker-options:add "$APP_NAME" run,deploy "--hostname dokku-discourse"
   dokku docker-options:add "$APP_NAME" run,deploy "--shm-size=$SHM_SIZE"
   dokku docker-options:add "$APP_NAME" run,deploy "--mac-address $MAC_ADDRESS"
+
+  ## TODO: call plugin functions instead of dokku
   dokku ps:set-restart-policy "$APP_NAME" always
 }
 
 fn-destroy-app() {
   declare APP_NAME="$1"
-  dokku apps:destroy "$APP_NAME"
+  plugn trigger app-destroy "$APP_NAME"
   sed -i "/^$APP_NAME$/d" "$DISCOURSE_APPS"
   local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_TYPE-$APP_NAME"
-  docker rmi "$DISCOURSE_IMAGE_NAME"
+  "$DOCKER_BIN" rmi "$DISCOURSE_IMAGE_NAME"
   rm "$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
 }
 

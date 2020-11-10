@@ -86,17 +86,22 @@ ssh root@dokku.me
 mkdir /var/lib/dokku/data/storage/APP_NAME/backups/default/
 ```
 
-Now copy the file into that directory.
+Exit your server and use scp (or similar) to copy the archive file to the server.
 
 *Substitute APP_NAME with the name of the discourse app you just created.*
 
 ```bash
-scp forum-backup.tar.gz root@dokku.me:/var/lib/dokku/data/storage/APP_NAME/backups/default/
+scp discourse-backup.tar.gz root@dokku.me:/var/lib/dokku/data/storage/APP_NAME/backups/default/
 ```
 
-Now login to the admin and restore from backup.
+Login to the admin and restore from backup.
 
-To complete the restoration, you'll need install plugins that were previously installed. Use the `dokku discourse:install-plugin` command to do so. 
+To complete the restoration, you'll need install plugins that were previously installed. Use the `dokku discourse:install-plugin` command to do so.
+
+## Credits
+
+- https://medium.com/batary/deploying-discourse-with-dokku-5eec28e2ad8b
+- https://gist.github.com/julienma/a101a72fdd97932bf28909633f45c7be
 
 ## Development
 

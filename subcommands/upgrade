@@ -4,6 +4,7 @@ set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
 
 discourse-upgrade-cmd() {
+  # shellcheck disable=SC2034
   declare desc="upgrades a discourse app"
   shift
   discourse_upgrade_app "$1"

@@ -4,7 +4,8 @@ set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
 
 discourse-install-plugin-cmd() {
-  declare desc="install-s all discourse apps"
+  # shellcheck disable=SC2034
+  declare desc="installs a discourse plugin"
   shift
   discourse_install_plugin "$@"
 }
