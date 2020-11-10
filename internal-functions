@@ -110,14 +110,6 @@ fn-upgrade-app() {
   fn-build-image "$APP_NAME"
 }
 
-fn-restore-app() {
-  declare APP_NAME="$1" BACKUP_FILE_NAME="$2"
-  ## FIXME
-  ## need to use docker exec
-  # "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher run $CONTAINER_TYPE-$APP_NAME "discourse enable_restore"
-  # "$DISCOURSE_DOCKER_IMAGE_ROOT"/launcher run $CONTAINER_TYPE-$APP_NAME "discourse restore $BACKUP_FILE_NAME"
-}
-
 fn-create-dokku-app() {
   declare APP_NAME="$1" HOSTNAME="$2" APP_STORAGE_ROOT="$3"
 
@@ -163,7 +155,6 @@ fn-discourse-help-content() {
     ${PLUGIN_COMMAND_PREFIX}:create <app>, Creates a new discourse app
     ${PLUGIN_COMMAND_PREFIX}:destroy <app>, Destroys a discourse app
     ${PLUGIN_COMMAND_PREFIX}:upgrade <app>, Upgrades a discourse app
-    ${PLUGIN_COMMAND_PREFIX}:restore <app> <backup_fil>, Restores a backup for a discourse app
     ${PLUGIN_COMMAND_PREFIX}:install-plugin <app> <git_url>, Installs a plugin for a discourse app
     ${PLUGIN_COMMAND_PREFIX}:list, Lists all discourse apps
 help_content

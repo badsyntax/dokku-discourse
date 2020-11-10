@@ -82,12 +82,3 @@ discourse_upgrade_app() {
   fn-deploy-app "$APP_NAME"
   dokku_log_info2 "Discourse app '$APP_NAME' upgraded"
 }
-
-discourse_restore_app() {
-  declare APP_NAME="$1" BACKUP_FILE_name="$2"
-  [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
-  [[ -z "$BACKUP_FILE_name" ]] && dokku_log_fail "Missing backup_file_name argument"
-  dokku apps:exists "$APP_NAME"
-  fn-restore-app "$APP_NAME" "$BACKUP_FILE_name"
-  dokku_log_info2 "Discourse app '$APP_NAME' restored"
-}

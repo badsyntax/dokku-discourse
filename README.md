@@ -15,7 +15,6 @@ discourse:help                            # Shows help
 discourse:create <app>                    # Creates a discourse app
 discourse:destroy <app>                   # Destroys a discourse app
 discourse:upgrade <app>                   # Upgrades a discourse app
-discourse:restore <app> <backup_file>     # Restores a backup for a discourse app
 discourse:install-plugin <app> <git_url>  # Installs a plugin for a discourse app
 discourse:list                            # Lists discourse apps
 ```
@@ -30,7 +29,7 @@ Each discourse app is a separate _standalone_ discourse instance.
 dokku discourse:create discourse-app
 ```
 
-⚠️&nbsp; *A new docker image will be built and this process can take some time.*
+*A new docker image will be built and this process can take some time.*
 
 You'll be prompted for various discourse configuration values.
 
@@ -50,7 +49,7 @@ You can also upgrade a discourse app with the following:
 dokku discourse:upgrade discourse-app
 ```
 
-⚠️&nbsp; *The running discourse app will be stopped, the docker image rebuilt and the app redeployed.*
+*The running discourse app will be stopped, the docker image rebuilt and the app redeployed.*
 
 ### Add discourse plugins
 
@@ -60,7 +59,7 @@ Install the askimet plugin:
 dokku discourse:install-plugin discourse-app https://github.com/discourse/discourse-akismet
 ```
 
-⚠️&nbsp; *The running discourse app will be stopped, the docker image rebuilt and the app redeployed.*
+*The running discourse app will be stopped, the docker image rebuilt and the app redeployed.*
 
 ### Destroy an app
 
@@ -68,27 +67,34 @@ dokku discourse:install-plugin discourse-app https://github.com/discourse/discou
 dokku discourse:destroy discourse-app
 ```
 
-⚠️&nbsp; *Destroying an app does **not** remove the data directory.*
+*Destroying an app does **not** remove the data directory.*
 
 ### Restore from backup
 
-Discourse allows you restore a backup in [the admin](http://discourse.dokku.me/admin/backups) but this feature is limited by the nginx max body size. So you generally want to restore a backup using the cli.
+You'll need a backup archive created by discourse, and a fresh discourse app.
 
-You'll need a backup archive created by discourse, and a fresh discourse app. Follow the instructions above to create a new discourse app.
+Follow the instructions above to create a new discourse app. Ensure you've registered an admin account as you'll need to login to the admin to restore the backup. If the backup site was using TLS, you need to set this up on the new instance before continuing (via `dokku letsencrypt`).
 
-Now copy your backup archive to your server.
+Discourse allows you restore a backup in [the admin](http://discourse.dokku.me/admin/backups), but you need to copy the backup into the discourse container first. This is achieved by copying the backup into the host directory that's mounted to the container.
 
-⚠️&nbsp; *The file must be placed within the correct dokku data directory. Substitute APP_NAME with the name of the discourse app you just created.*
+First, ensure the default backup directory exists on the host:
+
+*Substitute APP_NAME with the name of the discourse app you just created.*
+
+```bash
+ssh root@dokku.me
+mkdir /var/lib/dokku/data/storage/APP_NAME/backups/default/
+```
+
+Now copy the file into that directory.
+
+*Substitute APP_NAME with the name of the discourse app you just created.*
 
 ```bash
 scp forum-backup.tar.gz root@dokku.me:/var/lib/dokku/data/storage/APP_NAME/backups/default/
 ```
 
-Now you can restore the backup to the app you just created. The name must match the basename of the backup file.
-
-```bash
-dokku discourse:restore discourse-app forum-backup.tar.gz
-```
+Now login to the admin and restore from backup.
 
 ## Development
 
