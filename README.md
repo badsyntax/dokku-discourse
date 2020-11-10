@@ -1,6 +1,7 @@
 # dokku-discourse
 
 ![Analyze](https://github.com/badsyntax/dokku-discourse/workflows/Analyze/badge.svg)
+![Publish](https://github.com/badsyntax/dokku-discourse/workflows/Publish/badge.svg)
 
 Manages discourse apps on your dokku server.
 
