@@ -98,6 +98,11 @@ Login to the admin and restore from backup.
 
 To complete the restoration, you'll need install plugins that were previously installed. Use the `dokku discourse:install-plugin` command to do so.
 
+## Credits
+
+- https://medium.com/batary/deploying-discourse-with-dokku-5eec28e2ad8b
+- https://gist.github.com/julienma/a101a72fdd97932bf28909633f45c7be
+
 ## Development
 
 See [DEVELOPMENT.md](./DEVELOPMENT.md).
