@@ -2,7 +2,13 @@
 
 ## Getting started
 
-Move the plugin directory into the dokku repo at location `plugins/discourse`.
+Clone the dokku repo:
+
+```bash
+git clone https://github.com/dokku/dokku
+```
+
+Move the discourse plugin directory into the cloned dokku repo at location `plugins/discourse`.
 
 Change directory to the root of the dokku repo.
 
