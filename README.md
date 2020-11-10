@@ -1,6 +1,6 @@
 # dokku-discourse
 
-Manages discourse app instances on your dokku server.
+Manages discourse apps on your dokku server.
 
 ## Plugin installation
 
