@@ -96,6 +96,8 @@ scp forum-backup.tar.gz root@dokku.me:/var/lib/dokku/data/storage/APP_NAME/backu
 
 Now login to the admin and restore from backup.
 
+To complete the restoration, you'll need install plugins that were previously installed. Use the `dokku discourse:install-plugin` command to do so. 
+
 ## Development
 
 See [DEVELOPMENT.md](./DEVELOPMENT.md).
