@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 source "$PLUGIN_AVAILABLE_PATH/discourse/internal-functions"
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/ps/functions"
 
 discourse_create_app() {
   declare APP_NAME="$1" \
@@ -66,8 +67,8 @@ discourse_install_plugin() {
   declare APP_NAME="$1" PLUGIN_GIT_URL="$2";
   [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
   [[ -z "$PLUGIN_GIT_URL" ]] && dokku_log_fail "Missing git_url argument"
-  dokku apps:exists "$APP_NAME"
-  dokku ps:stop "$APP_NAME"
+  plugn trigger app-exists "$APP_NAME"
+  ps_stop "$APP_NAME"
   fn-install-plugin "$APP_NAME" "$PLUGIN_GIT_URL"
   fn-deploy-app "$APP_NAME"
   dokku_log_info2 "Plugin '$PLUGIN_GIT_URL' installed"
@@ -76,8 +77,8 @@ discourse_install_plugin() {
 discourse_upgrade_app() {
   declare APP_NAME="$1"
   [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
-  dokku apps:exists "$APP_NAME"
-  dokku ps:stop "$APP_NAME"
+  plugn trigger app-exists "$APP_NAME"
+  ps_stop "$APP_NAME"
   fn-upgrade-app "$APP_NAME"
   fn-deploy-app "$APP_NAME"
   dokku_log_info2 "Discourse app '$APP_NAME' upgraded"
