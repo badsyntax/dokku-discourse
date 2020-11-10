@@ -132,23 +132,23 @@ fn-create-dokku-app() {
 
   domains_set "$APP_NAME" "$HOSTNAME"
 
-  ## FIXME
+  ## TODO: call plugin functions instead of dokku
   dokku proxy:ports-add "$APP_NAME" http:80:80       # add correct port mapping
   dokku proxy:ports-remove "$APP_NAME" http:80:5000  # remove default port mapping as a result of calling domains:set
 
   config_set --no-restart "$APP_NAME" $ENV_VARS
 
-  ## FIXME
+  ## TODO: call plugin functions instead of dokku
   dokku storage:mount "$APP_NAME" "$APP_STORAGE_ROOT":/shared
   dokku storage:mount "$APP_NAME" "$APP_STORAGE_ROOT/log/var-log":/var/log
 
-  ## FIXME
+  ## TODO: call plugin functions instead of dokku
   dokku docker-options:add "$APP_NAME" run,deploy "--entrypoint /sbin/boot"
   dokku docker-options:add "$APP_NAME" run,deploy "--hostname dokku-discourse"
   dokku docker-options:add "$APP_NAME" run,deploy "--shm-size=$SHM_SIZE"
   dokku docker-options:add "$APP_NAME" run,deploy "--mac-address $MAC_ADDRESS"
 
-  ## FIXME
+  ## TODO: call plugin functions instead of dokku
   dokku ps:set-restart-policy "$APP_NAME" always
 }
 
