@@ -8,7 +8,7 @@ Clone the dokku repo:
 git clone https://github.com/dokku/dokku
 ```
 
-Move the discourse plugin directory into the cloned dokku repo at location `plugins/discourse`.
+Move the discourse plugin repo into the root of the cloned dokku repo. The directory name must be `discourse`.
 
 Change directory to the root of the dokku repo.
 
@@ -28,16 +28,11 @@ ssh root@dokku.me
 su - dokku
 ```
 
-Link the plugin:
+Link & enable the plugin:
 
 ```bash
 cd /var/lib/dokku/plugins/available
-ln -s /vagrant/plugins/discourse
-```
-
-Enable the plugin:
-
-```bash
+ln -s /vagrant/discourse
 dokku plugin:enable discourse
 ```
 

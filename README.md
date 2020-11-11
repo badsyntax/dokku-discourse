@@ -72,6 +72,22 @@ dokku discourse:destroy discourse-app
 
 *Destroying an app does **not** remove the data directory.*
 
+### Uninstall the plugin
+
+```bash
+dokku plugin:uninstall discourse
+```
+
+*Running discourse apps and images are unaffected.*
+
+To completely remove everything related to discourse:
+
+1. Destroy all discourse apps: `dokku discourse:destroy discourse-app`
+1. Uninstall the discourse plugin: `dokku plugin:uninstall discourse`
+1. Remove the base discourse image: `docker rmi $(docker images -q discourse/base)`
+
+*Destroying a discourse app does not remove the discourse data directory at `/var/lib/dokku/data/storage/APP_NAME`.*
+
 ### Restore from backup
 
 You'll need a backup archive created by discourse, and a fresh discourse app.

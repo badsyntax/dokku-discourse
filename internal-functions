@@ -21,7 +21,7 @@ fn-update-discourse-build-files() {
   if [[ -d "$DISCOURSE_DOCKER_IMAGE_ROOT" ]]; then
     cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
     dokku_log_info1 "Updating the discourse image build files"
-    git pull
+    git pull origin master
   else
     dokku_log_info1 "Cloning the discourse image build files"
     git clone https://github.com/discourse/discourse_docker.git "$DISCOURSE_DOCKER_IMAGE_ROOT"
@@ -34,9 +34,7 @@ fn-discourse-config-set-volumes() {
   local SET_VOLUMES_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/set-volumes"
   local UPDATED_CONFIG
   UPDATED_CONFIG=$("$SET_VOLUMES_BIN_PATH" "$CONFIG_FILE_PATH" "$APP_STORAGE_ROOT" 2> /dev/null)
-  if [[ -z "$UPDATED_CONFIG" ]]; then
-    dokku_log_fail "Error setting volumes in config"
-  fi
+  [[ -z "$UPDATED_CONFIG" ]] && dokku_log_fail "Error setting volumes in config"
   echo "$UPDATED_CONFIG" > "$CONFIG_FILE_PATH"
   dokku_log_info1 "Updated '$APP_NAME' volumes"
 }
@@ -53,9 +51,7 @@ fn-discourse-config-update-env() {
   local UPDATE_ENV_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/update-env"
   local UPDATED_CONFIG
   UPDATED_CONFIG=$("$UPDATE_ENV_BIN_PATH" "$CONFIG_FILE_PATH" "$HOSTNAME" "$DEVELOPER_EMAILS" "$SMTP_ADDRESS" "$SMTP_PORT" "$SMTP_USER_NAME" "$SMTP_PASSWORD" 2> /dev/null)
-  if [[ -z "$UPDATED_CONFIG" ]]; then
-    dokku_log_fail "Error setting env in config"
-  fi
+  [[ -z "$UPDATED_CONFIG" ]] && dokku_log_fail "Error setting env in config"
   echo "$UPDATED_CONFIG" > "$CONFIG_FILE_PATH"
   dokku_log_info1 "Updated '$APP_NAME' env"
 }
@@ -69,9 +65,11 @@ fn-create-discourse-default-config() {
 
 fn-build-image() {
   declare APP_NAME="$1"
-  dokku_log_info1 "Creating the discourse docker image, this can take a while..."
-  cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
-  ./launcher bootstrap "$CONTAINER_TYPE-$APP_NAME"
+  dokku_log_info1 "Building the discourse docker image, this can take a while..."
+  "$DISCOURSE_DOCKER_IMAGE_ROOT/launcher" bootstrap "$CONTAINER_TYPE-$APP_NAME"
+  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_TYPE-$APP_NAME"
+  "$DOCKER_BIN" tag "$DISCOURSE_IMAGE_NAME:latest" "dokku/$APP_NAME:latest"
+  "$DOCKER_BIN" rmi "$DISCOURSE_IMAGE_NAME"
 }
 
 fn-discourse-config-add-plugin() {
@@ -80,9 +78,7 @@ fn-discourse-config-add-plugin() {
   local ADD_PLUGIN_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/add-plugin"
   local UPDATED_CONFIG
   UPDATED_CONFIG=$("$ADD_PLUGIN_BIN_PATH" "$CONFIG_FILE_PATH" "$PLUGIN_GIT_URL" 2> /dev/null)
-  if [[ -z "$UPDATED_CONFIG" ]]; then
-    dokku_log_fail "Error adding plugin to config"
-  fi
+  [[ -z "$UPDATED_CONFIG" ]] && dokku_log_fail "Error adding plugin to config"
   echo "$UPDATED_CONFIG" > "$CONFIG_FILE_PATH"
   dokku_log_info1 "Updated '$APP_NAME' plugin config"
 }
@@ -90,8 +86,6 @@ fn-discourse-config-add-plugin() {
 fn-deploy-app() {
   declare APP_NAME="$1"
   verify_app_name "$APP_NAME"
-  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_TYPE-$APP_NAME"
-  "$DOCKER_BIN" tag "$DISCOURSE_IMAGE_NAME:latest" "dokku/$APP_NAME:latest"
   local IMAGE;
   IMAGE="$(get_app_image_name "$APP_NAME" latest)"
   verify_image "$IMAGE" || return 1
@@ -153,13 +147,23 @@ fn-create-dokku-app() {
   dokku ps:set-restart-policy "$APP_NAME" always
 }
 
+fn-cleanup-app() {
+  declare APP_NAME="$1"
+  rm "$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
+  dokku_log_info1 "Cleaned up $APP_NAME config"
+}
+
 fn-destroy-app() {
   declare APP_NAME="$1"
   plugn trigger app-destroy "$APP_NAME"
-  sed -i "/^$APP_NAME$/d" "$DISCOURSE_APPS"
-  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_TYPE-$APP_NAME"
-  "$DOCKER_BIN" rmi "$DISCOURSE_IMAGE_NAME"
-  rm "$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
+  sed -i "/^$APP_NAME$/d" "$DISCOURSE_APPS" 2> /dev/null
+  fn-cleanup-app "$APP_NAME"
+}
+
+fn-cleanup-plugin() {
+  [[ -f "$DISCOURSE_APPS" ]] && rm "$DISCOURSE_APPS"
+  [[ -f "$DISCOURSE_DOCKER_IMAGE_ROOT" ]] && rm -r "$DISCOURSE_DOCKER_IMAGE_ROOT"
+  dokku_log_info1 "Cleaned up $PLUGIN_COMMAND_PREFIX plugin"
 }
 
 fn-discourse-help-content() {

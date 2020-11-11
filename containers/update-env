@@ -9,10 +9,10 @@ except ImportError:
     from yaml import Loader, Dumper
 
 if __name__ == "__main__":
-    config_file = sys.argv[1]
-
     lang = "en_US.UTF-8"
     default_locale = "en"
+
+    config_file = sys.argv[1]
     hostname = sys.argv[2]
     developer_emails = sys.argv[3]
     smtp_address = sys.argv[4]

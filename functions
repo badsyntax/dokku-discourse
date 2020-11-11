@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+source "$PLUGIN_AVAILABLE_PATH/discourse/config"
 source "$PLUGIN_AVAILABLE_PATH/discourse/internal-functions"
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
 source "$PLUGIN_CORE_AVAILABLE_PATH/ps/functions"
