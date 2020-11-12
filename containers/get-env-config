@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+
+import sys
+from yaml import load
+
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader
+
+if __name__ == "__main__":
+    config_file = sys.argv[1]
+    key = sys.argv[2]
+    with open(config_file, "r") as f:
+        data = load(f, Loader=Loader)
+        print(data["env"][key])

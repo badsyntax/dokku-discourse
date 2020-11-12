@@ -7,7 +7,7 @@ discourse-destroy-cmd() {
   # shellcheck disable=SC2034
   declare desc="destroys a discourse app"
   shift
-  discourse_destroy_app "$@"
+  discourse_destroy_apps "$@"
 }
 
 discourse-destroy-cmd "$@"

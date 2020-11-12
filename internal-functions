@@ -17,6 +17,16 @@ fn-get-input() {
   fi
 }
 
+fn-get-env-config() {
+  declare KEY="$1"
+  local CONFIG_FILE_PATH="$DOKKU_ROOT/$APP_NAME/$DISCOURSE_CONTAINER_CONFIG_NAME.yml"
+  local GET_ENV_CONFIG_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/get-env-config"
+  local CONFIG
+  CONFIG=$("$GET_ENV_CONFIG_BIN_PATH" "$CONFIG_FILE_PATH" "$KEY" 2> /dev/null)
+  [[ -z "$CONFIG" ]] && dokku_log_fail "Config key not found: $KEY"
+  echo "$CONFIG"
+}
+
 fn-update-discourse-build-files() {
   if [[ -d "$DISCOURSE_DOCKER_IMAGE_ROOT" ]]; then
     cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
@@ -28,18 +38,18 @@ fn-update-discourse-build-files() {
   fi
 }
 
-fn-discourse-config-set-volumes() {
+fn-update-discourse-config-set-volumes() {
   declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
-  local CONFIG_FILE_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
+  local CONFIG_FILE_PATH="$DOKKU_ROOT/$APP_NAME/$DISCOURSE_CONTAINER_CONFIG_NAME.yml"
   local SET_VOLUMES_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/set-volumes"
   local UPDATED_CONFIG
   UPDATED_CONFIG=$("$SET_VOLUMES_BIN_PATH" "$CONFIG_FILE_PATH" "$APP_STORAGE_ROOT" 2> /dev/null)
   [[ -z "$UPDATED_CONFIG" ]] && dokku_log_fail "Error setting volumes in config"
   echo "$UPDATED_CONFIG" > "$CONFIG_FILE_PATH"
-  dokku_log_info1 "Updated '$APP_NAME' volumes"
+  dokku_log_info1 "Updated '$APP_NAME' discourse volumes"
 }
 
-fn-discourse-config-update-env() {
+fn-update-discourse-config-env() {
   declare APP_NAME="$1" \
     HOSTNAME="$2" \
     DEVELOPER_EMAILS="$3" \
@@ -47,28 +57,62 @@ fn-discourse-config-update-env() {
     SMTP_PORT="$5" \
     SMTP_USER_NAME="$6" \
     SMTP_PASSWORD="$7"
-  local CONFIG_FILE_PATH="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
+  local CONFIG_FILE_PATH="$DOKKU_ROOT/$APP_NAME/$DISCOURSE_CONTAINER_CONFIG_NAME.yml"
   local UPDATE_ENV_BIN_PATH="$PLUGIN_AVAILABLE_PATH/discourse/containers/update-env"
   local UPDATED_CONFIG
   UPDATED_CONFIG=$("$UPDATE_ENV_BIN_PATH" "$CONFIG_FILE_PATH" "$HOSTNAME" "$DEVELOPER_EMAILS" "$SMTP_ADDRESS" "$SMTP_PORT" "$SMTP_USER_NAME" "$SMTP_PASSWORD" 2> /dev/null)
   [[ -z "$UPDATED_CONFIG" ]] && dokku_log_fail "Error setting env in config"
   echo "$UPDATED_CONFIG" > "$CONFIG_FILE_PATH"
-  dokku_log_info1 "Updated '$APP_NAME' env"
+  dokku_log_info1 "Updated '$APP_NAME' discourse env"
 }
 
-fn-create-discourse-default-config() {
-  declare APP_NAME="$1" APP_STORAGE_ROOT="$2"
-  local APP_CONFIG="containers/$CONTAINER_TYPE-$APP_NAME.yml"
-  cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
-  cp "$PLUGIN_ROOT_PATH/containers/$CONTAINER_TYPE.yml" "$APP_CONFIG"
+fn-create-default-discourse-container-config() {
+  declare APP_NAME="$1"
+  mkdir -p "$DOKKU_ROOT/$APP_NAME"
+  local CONFIG_FILE_PATH="$DOKKU_ROOT/$APP_NAME/$DISCOURSE_CONTAINER_CONFIG_NAME.yml"
+  if [[ ! -f "$CONFIG_FILE_PATH" ]]; then
+    cp "$PLUGIN_ROOT_PATH/containers/$CONTAINER_TYPE.yml" "$CONFIG_FILE_PATH"
+  fi
+}
+
+fn-update-discourse-container-config() {
+  declare APP_NAME="$1" \
+    APP_STORAGE_ROOT="$2" \
+    HOSTNAME="$3" \
+    DEVELOPER_EMAILS="$4" \
+    SMTP_ADDRESS="$5" \
+    SMTP_PORT="$6" \
+    SMTP_USER_NAME="$7" \
+    SMTP_PASSWORD="$8"
+
+  fn-update-discourse-config-env \
+    "$APP_NAME" \
+    "$HOSTNAME" \
+    "$DEVELOPER_EMAILS" \
+    "$SMTP_ADDRESS" \
+    "$SMTP_PORT" \
+    "$SMTP_USER_NAME" \
+    "$SMTP_PASSWORD"
+
+  fn-update-discourse-config-set-volumes "$APP_NAME" "$APP_STORAGE_ROOT"
+
+  local CONFIG_FILE_PATH="$DOKKU_ROOT/$APP_NAME/$DISCOURSE_CONTAINER_CONFIG_NAME.yml"
+  dokku_log_info2 "Container config updated at location $CONFIG_FILE_PATH"
 }
 
 fn-build-image() {
   declare APP_NAME="$1"
+  "$DOCKER_BIN" ps -q -f ancestor="dokku/$APP_NAME" >/dev/null && ps_stop "$APP_NAME"
+  local APP_IMAGE_NAME="dokku/$APP_NAME:latest"
   dokku_log_info1 "Building the discourse docker image, this can take a while..."
+  local CONTAINER_CONFIG_PATH="$DOKKU_ROOT/$APP_NAME/$DISCOURSE_CONTAINER_CONFIG_NAME.yml"
+  if [[ ! -f "$CONTAINER_CONFIG_PATH" ]]; then
+    dokku_log_fail "Discourse conainer config not found at location $CONTAINER_CONFIG_PATH"
+  fi
+  ln -sf "$CONTAINER_CONFIG_PATH" "$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
   "$DISCOURSE_DOCKER_IMAGE_ROOT/launcher" bootstrap "$CONTAINER_TYPE-$APP_NAME"
   local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_TYPE-$APP_NAME"
-  "$DOCKER_BIN" tag "$DISCOURSE_IMAGE_NAME:latest" "dokku/$APP_NAME:latest"
+  "$DOCKER_BIN" tag "$DISCOURSE_IMAGE_NAME:latest" "$APP_IMAGE_NAME"
   "$DOCKER_BIN" rmi "$DISCOURSE_IMAGE_NAME"
 }
 
@@ -110,19 +154,16 @@ fn-upgrade-app() {
   fn-build-image "$APP_NAME"
 }
 
-fn-create-dokku-app() {
+fn-configure-app() {
   declare APP_NAME="$1" HOSTNAME="$2" APP_STORAGE_ROOT="$3"
 
-  plugn trigger app-create "$APP_NAME"
-  echo "$APP_NAME" >> "$DISCOURSE_APPS"
-
-  dokku_log_info1 "Generating config..."
+  dokku_log_info1 "Generating docker config..."
 
   local RUN_ARGS MAC_ADDRESS SHM_SIZE ENV_VARS
   RUN_ARGS=$(fn-get-run-args "$APP_NAME" 2>&1)
   MAC_ADDRESS=$(echo "$RUN_ARGS" | sed -r 's/.*--mac-address(=| )([^ ]+).*/\2/')
   SHM_SIZE=$(echo "$RUN_ARGS" | sed -r 's/.*--shm-size(=| )([^ ]+).*/\2/')
-  ENV_VARS=$(echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | tr "\n" "\t" | sed -r 's/(\s*\-e\s*)|(\s+)/ /g' | sed -r 's/^\s*|\s*$//g')
+  ENV_VARS=$(echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | tr "\n" "\t" | sed -r "s/([\"']?\s*\-e\s*[\"']?)|(\s+)/ /g" | sed -r 's/^\s*|\s*$//g')
 
   domains_set "$APP_NAME" "$HOSTNAME"
 
@@ -134,8 +175,10 @@ fn-create-dokku-app() {
   config_set --no-restart "$APP_NAME" $ENV_VARS
 
   ## TODO: call plugin functions instead of dokku
-  dokku storage:mount "$APP_NAME" "$APP_STORAGE_ROOT":/shared
-  dokku storage:mount "$APP_NAME" "$APP_STORAGE_ROOT/log/var-log":/var/log
+  ! grep -q "$APP_STORAGE_ROOT:/shared" <<< "$(dokku storage:list "$APP_NAME" -q)" && \
+    dokku storage:mount "$APP_NAME" "$APP_STORAGE_ROOT:/shared"
+  ! grep -q "$APP_STORAGE_ROOT/log/var-log:/var/log" <<< "$(dokku storage:list "$APP_NAME" -q)" && \
+    dokku storage:mount "$APP_NAME" "$APP_STORAGE_ROOT/log/var-log:/var/log"
 
   ## TODO: call plugin functions instead of dokku
   dokku docker-options:add "$APP_NAME" run,deploy "--entrypoint /sbin/boot"
@@ -149,7 +192,8 @@ fn-create-dokku-app() {
 
 fn-cleanup-app() {
   declare APP_NAME="$1"
-  rm "$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
+  local CONTAINER_CONFIG="$DISCOURSE_DOCKER_IMAGE_ROOT/containers/$CONTAINER_TYPE-$APP_NAME.yml"
+  [[ -f "$CONTAINER_CONFIG" ]] && rm "$CONTAINER_CONFIG"
   dokku_log_info1 "Cleaned up $APP_NAME config"
 }
 

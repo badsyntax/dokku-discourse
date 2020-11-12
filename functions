@@ -13,53 +13,67 @@ discourse_create_app() {
     SMTP_USERNAME="$6" \
     SMTP_PASSWORD="$7"
 
+  ## TODO: call plugin functions instead of dokku
+  if grep -qxF "$(dokku apps:list)" <<< "$APP_NAME"; then
+    dokku_log_warn "dokku app '$APP_NAME' already exists and will be used for this discourse instance"
+  else
+    plugn trigger app-create "$APP_NAME"
+    echo "$APP_NAME" >> "$DISCOURSE_APPS"
+  fi
+
+  fn-create-default-discourse-container-config "$APP_NAME"
+
   [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
-  [[ -z "$HOSTNAME" ]] && HOSTNAME=$(fn-get-input "Hostname for your Discourse?" "discourse.dokku.me")
-  [[ -z "$DEVELOPER_EMAILS" ]] && DEVELOPER_EMAILS=$(fn-get-input "Email address for admin account(s)?" "me@example.com,you@example.com")
-  [[ -z "$SMTP_ADDRESS" ]] && SMTP_ADDRESS=$(fn-get-input "SMTP server address?" "smtp.example.com")
-  [[ -z "$SMTP_PORT" ]] && SMTP_PORT=$(fn-get-input "SMTP port?" "587")
-  [[ -z "$SMTP_USERNAME" ]] && SMTP_USERNAME=$(fn-get-input "SMTP user name?" "user@example.com")
-  [[ -z "$SMTP_PASSWORD" ]] && SMTP_PASSWORD=$(fn-get-input "SMTP password?" "password")
+  [[ -z "$HOSTNAME" ]] && HOSTNAME=$(fn-get-input "Hostname for your Discourse?" "$(fn-get-env-config DISCOURSE_HOSTNAME)")
+  [[ -z "$DEVELOPER_EMAILS" ]] && DEVELOPER_EMAILS=$(fn-get-input "Email address for admin account(s)?" "$(fn-get-env-config DISCOURSE_DEVELOPER_EMAILS)")
+  [[ -z "$SMTP_ADDRESS" ]] && SMTP_ADDRESS=$(fn-get-input "SMTP server address?" "$(fn-get-env-config DISCOURSE_SMTP_ADDRESS)")
+  [[ -z "$SMTP_PORT" ]] && SMTP_PORT=$(fn-get-input "SMTP port?" "$(fn-get-env-config DISCOURSE_SMTP_PORT)")
+  [[ -z "$SMTP_USERNAME" ]] && SMTP_USERNAME=$(fn-get-input "SMTP user name?" "$(fn-get-env-config DISCOURSE_SMTP_USER_NAME)")
+  [[ -z "$SMTP_PASSWORD" ]] && SMTP_PASSWORD=$(fn-get-input "SMTP password?" "$(fn-get-env-config DISCOURSE_SMTP_PASSWORD)")
 
   local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
 
-  local DISCOURSE_IMAGE_NAME="local_discourse/$CONTAINER_TYPE-$APP_NAME"
-  if [[ -n $("$DOCKER_BIN" images -q "$DISCOURSE_IMAGE_NAME:latest") ]]; then
-    dokku_log_warn "Discourse image $DISCOURSE_IMAGE_NAME:latest will be overwritten"
-  fi
-
-  fn-update-discourse-build-files
-  fn-create-discourse-default-config "$APP_NAME" "$APP_STORAGE_ROOT"
-  fn-discourse-config-update-env \
-    "$APP_NAME" \
+  fn-update-discourse-container-config "$APP_NAME" \
+    "$APP_STORAGE_ROOT" \
     "$HOSTNAME" \
     "$DEVELOPER_EMAILS" \
     "$SMTP_ADDRESS" \
     "$SMTP_PORT" \
     "$SMTP_USERNAME" \
     "$SMTP_PASSWORD"
-  fn-discourse-config-set-volumes "$APP_NAME" "$APP_STORAGE_ROOT"
+
+  fn-update-discourse-build-files
+
   fn-build-image "$APP_NAME"
-  fn-create-dokku-app "$APP_NAME" "$HOSTNAME" "$APP_STORAGE_ROOT"
+  fn-configure-app "$APP_NAME" "$HOSTNAME" "$APP_STORAGE_ROOT"
   fn-deploy-app "$APP_NAME"
   dokku_log_info1 "Data stored in $APP_STORAGE_ROOT"
   dokku_log_info2 "Discourse app '$APP_NAME' created"
 }
 
-discourse_destroy_app() {
-  declare APP_NAME="$1"
-  [[ -z "$APP_NAME" ]] && dokku_log_fail "Missing app argument"
-  fn-destroy-app "$APP_NAME"
-  local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
-  dokku_log_warn "Leaving data directory unchanged at $APP_STORAGE_ROOT"
-  dokku_log_info2 "Discourse app '$APP_NAME' destroyed"
+discourse_destroy_apps() {
+  [[ -z "$1" ]] && dokku_log_fail "Missing app argument"
+  for APP_NAME in "$@"
+  do
+    fn-destroy-app "$APP_NAME"
+    local APP_STORAGE_ROOT="$STORAGE_ROOT/$APP_NAME"
+    dokku_log_warn "Leaving data directory unchanged at $APP_STORAGE_ROOT"
+    dokku_log_info2 "Discourse app '$APP_NAME' destroyed"
+  done
 }
 
 discourse_list() {
+  local QUIET=""
+  while getopts "q" flag; do
+    case "${flag}" in
+      q) QUIET="true" ;;
+      *) ;;
+    esac
+  done
   if [[ ! -f "$DISCOURSE_APPS" ]]; then
-    dokku_log_warn "No discourse apps have been created"
+    [[ -z "$QUIET" ]] && dokku_log_warn "No discourse apps have been created"
   else
-    dokku_log_info2 "Discourse apps"
+    [[ -z "$QUIET" ]] && dokku_log_info2 "Discourse apps"
     cat "$DISCOURSE_APPS" 2> /dev/null
   fi
 }

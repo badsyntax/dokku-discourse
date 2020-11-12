@@ -42,6 +42,14 @@ Once your app is built & deployed, you can treat it as any other dokku app. You 
 
 Continue with the offical [discourse install instructions](https://github.com/discourse/discourse/blob/master/docs/INSTALL-cloud.md#start-discourse) to complete the discourse installation, ignoring any TLS setup instructions.
 
+### Customise the discourse container config
+
+A discourse container config file is created when a discourse app is created. The config is based on [standalone.yml](https://github.com/discourse/discourse_docker/blob/master/samples/standalone.yml).
+
+You can edit this generated file at `/home/dokku/APP_NAME/discourse_standalone.yml`. Don't make any changes to the `volumes` section, but feel free to change anything else.
+
+After making change be sure to run `dokku discourse:create <app>` to rebuild and re-deploy the discourse app.
+
 ### Upgrade a discourse app
 
 The easiest way to upgrade is to use [the admin](http://discourse.dokku.me/admin/upgrade).
@@ -82,7 +90,7 @@ dokku plugin:uninstall discourse
 
 To completely remove everything related to discourse:
 
-1. Destroy all discourse apps: `dokku discourse:destroy discourse-app`
+1. Destroy all discourse apps: `dokku discourse:destroy $(dokku discourse:list -q)`
 1. Uninstall the discourse plugin: `dokku plugin:uninstall discourse`
 1. Remove the base discourse image: `docker rmi $(docker images -q discourse/base)`
 1. Remove discourse data directories at `/var/lib/dokku/data/storage/`.
