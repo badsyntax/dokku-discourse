@@ -1,2 +1,0 @@
-# Can't follow non-constant source. Use a directive to specify location.shellcheck(SC1090)
-disable=SC1091

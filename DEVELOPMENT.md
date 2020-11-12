@@ -38,6 +38,28 @@ dokku plugin:enable discourse
 
 Now you can work on the plugin from your host machine and run the plugin in the dokku VM.
 
+## Tests
+
+Tests must be run within the dokku VM:
+
+```sh
+sudo apt-get install bats
+```
+
+```sh
+make test
+```
+
+*The tests will take a **very long** time to run.*
+
+## Linting
+
+On your host machine:
+
+```sh
+brew install shellcheck
+```
+
 ## Debugging
 
 View logs:

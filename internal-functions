@@ -102,7 +102,7 @@ fn-update-discourse-container-config() {
 
 fn-build-image() {
   declare APP_NAME="$1"
-  [[ ! -z $("$DOCKER_BIN" ps -q -f ancestor="dokku/$APP_NAME") ]] && ps_stop "$APP_NAME"
+  [[ -n $("$DOCKER_BIN" ps -q -f ancestor="dokku/$APP_NAME") ]] && ps_stop "$APP_NAME"
   local APP_IMAGE_NAME="dokku/$APP_NAME:latest"
   dokku_log_info1 "Building the discourse docker image, this can take a while..."
   local CONTAINER_CONFIG_PATH="$DOKKU_ROOT/$APP_NAME/$DISCOURSE_CONTAINER_CONFIG_NAME.yml"
