@@ -102,7 +102,7 @@ fn-update-discourse-container-config() {
 
 fn-build-image() {
   declare APP_NAME="$1"
-  "$DOCKER_BIN" ps -q -f ancestor="dokku/$APP_NAME" >/dev/null && ps_stop "$APP_NAME"
+  [[ ! -z $("$DOCKER_BIN" ps -q -f ancestor="dokku/$APP_NAME") ]] && ps_stop "$APP_NAME"
   local APP_IMAGE_NAME="dokku/$APP_NAME:latest"
   dokku_log_info1 "Building the discourse docker image, this can take a while..."
   local CONTAINER_CONFIG_PATH="$DOKKU_ROOT/$APP_NAME/$DISCOURSE_CONTAINER_CONFIG_NAME.yml"
@@ -206,7 +206,7 @@ fn-destroy-app() {
 
 fn-cleanup-plugin() {
   [[ -f "$DISCOURSE_APPS" ]] && rm "$DISCOURSE_APPS"
-  [[ -f "$DISCOURSE_DOCKER_IMAGE_ROOT" ]] && rm -r "$DISCOURSE_DOCKER_IMAGE_ROOT"
+  [[ -d "$DISCOURSE_DOCKER_IMAGE_ROOT" ]] && rm -r "$DISCOURSE_DOCKER_IMAGE_ROOT"
   dokku_log_info1 "Cleaned up $PLUGIN_COMMAND_PREFIX plugin"
 }
 
