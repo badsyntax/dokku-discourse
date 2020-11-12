@@ -15,7 +15,7 @@ dokku plugin:install https://github.com/badsyntax/dokku-discourse.git discourse
 
 ```sh
 discourse:help                            # Shows help
-discourse:create <app>                    # Creates a discourse app
+discourse:create <app>                    # Creates/rebuilds a discourse app
 discourse:destroy <app>                   # Destroys a discourse app
 discourse:upgrade <app>                   # Upgrades a discourse app
 discourse:install-plugin <app> <git_url>  # Installs a plugin for a discourse app
@@ -46,7 +46,7 @@ Continue with the offical [discourse install instructions](https://github.com/di
 
 A discourse container config file is created when a discourse app is created. The config is based on [standalone.yml](https://github.com/discourse/discourse_docker/blob/master/samples/standalone.yml).
 
-You can edit this generated file at `/home/dokku/APP_NAME/discourse_standalone.yml`. Don't make any changes to the `volumes` section, but feel free to change anything else.
+You can edit the config at `/home/dokku/APP_NAME/discourse_standalone.yml`. Don't make any changes to the `volumes` section, but feel free to change anything else.
 
 After making change be sure to run `dokku discourse:create <app>` to rebuild and re-deploy the discourse app.
 
