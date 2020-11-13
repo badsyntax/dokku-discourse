@@ -15,7 +15,7 @@ dokku plugin:install https://github.com/badsyntax/dokku-discourse.git discourse
 
 ```sh
 discourse:help                            # Shows help
-discourse:create <app>                    # Creates a discourse app
+discourse:create <app>                    # Creates/rebuilds a discourse app
 discourse:destroy <app>                   # Destroys a discourse app
 discourse:upgrade <app>                   # Upgrades a discourse app
 discourse:install-plugin <app> <git_url>  # Installs a plugin for a discourse app
@@ -42,6 +42,14 @@ Once your app is built & deployed, you can treat it as any other dokku app. You 
 
 Continue with the offical [discourse install instructions](https://github.com/discourse/discourse/blob/master/docs/INSTALL-cloud.md#start-discourse) to complete the discourse installation, ignoring any TLS setup instructions.
 
+### Customise the discourse container config
+
+A discourse container config file is created when a discourse app is created. The config is based on [standalone.yml](https://github.com/discourse/discourse_docker/blob/master/samples/standalone.yml).
+
+You can edit the config at `/home/dokku/APP_NAME/discourse_standalone.yml`. Don't make any changes to the `volumes` section, but feel free to change anything else.
+
+After making change be sure to run `dokku discourse:create <app>` to rebuild and re-deploy the discourse app.
+
 ### Upgrade a discourse app
 
 The easiest way to upgrade is to use [the admin](http://discourse.dokku.me/admin/upgrade).
@@ -56,7 +64,7 @@ dokku discourse:upgrade discourse-app
 
 ### Add discourse plugins
 
-Install the askimet plugin:
+Install the akismet plugin:
 
 ```bash
 dokku discourse:install-plugin discourse-app https://github.com/discourse/discourse-akismet
@@ -70,7 +78,22 @@ dokku discourse:install-plugin discourse-app https://github.com/discourse/discou
 dokku discourse:destroy discourse-app
 ```
 
-*Destroying an app does **not** remove the data directory.*
+*Destroying an app does **not** remove the data directory at `/var/lib/dokku/data/storage/APP_NAME`.*
+
+### Uninstall the plugin
+
+```bash
+dokku plugin:uninstall discourse
+```
+
+*Running discourse apps and images are unaffected.*
+
+To completely remove everything related to discourse:
+
+1. Destroy all discourse apps: `dokku discourse:destroy $(dokku discourse:list -q)`
+1. Uninstall the discourse plugin: `dokku plugin:uninstall discourse`
+1. Remove the base discourse image: `docker rmi $(docker images -q discourse/base)`
+1. Remove discourse data directories at `/var/lib/dokku/data/storage/`.
 
 ### Restore from backup
 

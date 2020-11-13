@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 source "$PLUGIN_AVAILABLE_PATH/discourse/config"
-source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
 source "$PLUGIN_AVAILABLE_PATH/discourse/internal-functions"
 set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
@@ -9,7 +8,6 @@ case "$1" in
   help | "$PLUGIN_COMMAND_PREFIX:help")
     cmd-discourse-help "$@"
     ;;
-
   *)
     exit "$DOKKU_NOT_IMPLEMENTED_EXIT"
     ;;

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+source "$PLUGIN_AVAILABLE_PATH/discourse/config"
+source "$PLUGIN_AVAILABLE_PATH/discourse/internal-functions"
+
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+PLUGIN="$1"
+[[ "$PLUGIN" == "$PLUGIN_COMMAND_PREFIX" ]] && fn-cleanup-plugin

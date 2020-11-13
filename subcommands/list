@@ -6,7 +6,8 @@ set -eo pipefail
 discourse-list-cmd() {
   # shellcheck disable=SC2034
   declare desc="lists all discourse apps"
-  discourse_list
+  shift
+  discourse_list "$@"
 }
 
 discourse-list-cmd "$@"
