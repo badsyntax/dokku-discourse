@@ -101,11 +101,6 @@ fn-update-discourse-container-config() {
 }
 
 fn-version-greater-equal() {
-  printf '%s\n%s\n' "$2" "$1" | sort -V -C
-}
-
-fn-ps-stop() {
-  declare APP_NAME="$1"
   local DOKKU_VERSION;
   DOKKU_VERSION=$(fn-get-dokku-version)
   if [[ -z "$DOKKU_VERSION" ]]; then
@@ -113,7 +108,12 @@ fn-ps-stop() {
   fi
   local DOKKU_VERSION_NUMBER
   DOKKU_VERSION_NUMBER=${DOKKU_VERSION//^v/}
-  if fn-version-greater-equal "$DOKKU_VERSION_NUMBER" "0.22.0"; then
+  printf '%s\n%s\n' "$DOKKU_VERSION_NUMBER" "$1" | sort -V -C
+}
+
+fn-ps-stop() {
+  declare APP_NAME="$1"
+  if fn-version-greater-equal "0.22.0"; then
     dokku ps:stop "$APP_NAME"
   else
     ps_stop "$APP_NAME"
@@ -207,7 +207,11 @@ fn-configure-app() {
   dokku docker-options:add "$APP_NAME" run,deploy "--mac-address $MAC_ADDRESS"
 
   ## TODO: call plugin functions instead of dokku
-  dokku ps:set "$APP_NAME" restart-policy always
+  if fn-version-greater-equal "0.22.0"; then
+    dokku ps:set-restart-policy "$APP_NAME" always
+  else
+    dokku ps:set "$APP_NAME" restart-policy always
+  fi
 }
 
 fn-cleanup-app() {
