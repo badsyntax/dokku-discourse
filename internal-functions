@@ -108,7 +108,7 @@ fn-version-greater-equal() {
   fi
   local DOKKU_VERSION_NUMBER
   DOKKU_VERSION_NUMBER=${DOKKU_VERSION//^v/}
-  printf '%s\n%s\n' "$DOKKU_VERSION_NUMBER" "$1" | sort -V -C
+  printf '%s\n%s\n' "$1" "$DOKKU_VERSION_NUMBER" | sort -V -C
 }
 
 fn-ps-stop() {
