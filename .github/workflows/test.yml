@@ -18,8 +18,8 @@ jobs:
         run: make lint
       - name: Install dokku
         run: |
-          wget https://raw.githubusercontent.com/dokku/dokku/v0.21.4/bootstrap.sh
-          sudo DOKKU_TAG=v0.21.4 bash bootstrap.sh
+          wget https://raw.githubusercontent.com/dokku/dokku/v0.22.0/bootstrap.sh
+          sudo DOKKU_TAG=v0.22.0 bash bootstrap.sh
       - name: Install discourse plugin
         run: |
           sudo dokku plugin:install file:///$(pwd) discourse
