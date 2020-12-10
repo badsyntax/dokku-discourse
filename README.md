@@ -8,7 +8,11 @@ Manages discourse apps on your dokku server.
 ## Plugin installation
 
 ```sh
-dokku plugin:install https://github.com/badsyntax/dokku-discourse.git discourse
+# For dokku >= v0.22.0
+dokku plugin:install https://github.com/badsyntax/dokku-discourse.git
+
+# For dokku < v0.22.0
+dokku plugin:install https://github.com/badsyntax/dokku-discourse.git --committish 0.2.1
 ```
 
 ## Commands
