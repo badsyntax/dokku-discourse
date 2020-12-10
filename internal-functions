@@ -187,7 +187,7 @@ fn-configure-app() {
   dokku docker-options:add "$APP_NAME" run,deploy "--mac-address $MAC_ADDRESS"
 
   ## TODO: call plugin functions instead of dokku
-  dokku ps:set-restart-policy "$APP_NAME" always
+  dokku ps:set "$APP_NAME" restart-policy always
 }
 
 fn-cleanup-app() {
