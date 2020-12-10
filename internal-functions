@@ -113,7 +113,7 @@ fn-ps-stop() {
   fi
   local DOKKU_VERSION_NUMBER
   DOKKU_VERSION_NUMBER=${DOKKU_VERSION//^v/}
-  if [[ $(fn-version-greater-equal "$DOKKU_VERSION_NUMBER" "0.22.0") ]]; then
+  if fn-version-greater-equal "$DOKKU_VERSION_NUMBER" "0.22.0"; then
     dokku ps:stop "$APP_NAME"
   else
     ps_stop "$APP_NAME"

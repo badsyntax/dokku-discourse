@@ -21,13 +21,12 @@ jobs:
         run: make lint
       - name: Install dokku
         run: |
-          wget https://raw.githubusercontent.com/dokku/dokku/$DOKKU_TAG/bootstrap.sh
-          sudo bash bootstrap.sh
+          wget https://raw.githubusercontent.com/dokku/dokku/$DOKKU_VERSION/bootstrap.sh
+          sudo DOKKU_TAG="$DOKKU_VERSION" bash bootstrap.sh
         env:
-          DOKKU_TAG: ${{ matrix.dokku-version }}
+          DOKKU_VERSION: ${{ matrix.dokku-version }}
       - name: Install discourse plugin
         run: |
-          dokku version
           sudo dokku plugin:install file:///$(pwd) discourse
       - name: Run tests
         run: sudo make test
