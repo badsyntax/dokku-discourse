@@ -100,9 +100,29 @@ fn-update-discourse-container-config() {
   dokku_log_info2 "Container config updated at location $CONFIG_FILE_PATH"
 }
 
+fn-version-greater-equal() {
+  local DOKKU_VERSION;
+  DOKKU_VERSION=$(fn-get-dokku-version)
+  if [[ -z "$DOKKU_VERSION" ]]; then
+    dokku_log_fail "Unable to determine dokku's version"
+  fi
+  local DOKKU_VERSION_NUMBER
+  DOKKU_VERSION_NUMBER=${DOKKU_VERSION//^v/}
+  printf '%s\n%s\n' "$1" "$DOKKU_VERSION_NUMBER" | sort -V -C
+}
+
+fn-ps-stop() {
+  declare APP_NAME="$1"
+  if fn-version-greater-equal "0.22.0"; then
+    dokku ps:stop "$APP_NAME"
+  else
+    ps_stop "$APP_NAME"
+  fi
+}
+
 fn-build-image() {
   declare APP_NAME="$1"
-  [[ -n $("$DOCKER_BIN" ps -q -f ancestor="dokku/$APP_NAME") ]] && ps_stop "$APP_NAME"
+  [[ -n $("$DOCKER_BIN" ps -q -f ancestor="dokku/$APP_NAME") ]] && fn-ps-stop "$APP_NAME"
   local APP_IMAGE_NAME="dokku/$APP_NAME:latest"
   dokku_log_info1 "Building the discourse docker image, this can take a while..."
   local CONTAINER_CONFIG_PATH="$DOKKU_ROOT/$APP_NAME/$DISCOURSE_CONTAINER_CONFIG_NAME.yml"
@@ -187,7 +207,13 @@ fn-configure-app() {
   dokku docker-options:add "$APP_NAME" run,deploy "--mac-address $MAC_ADDRESS"
 
   ## TODO: call plugin functions instead of dokku
-  dokku ps:set "$APP_NAME" restart-policy always
+  if fn-version-greater-equal "0.22.0"; then
+    echo "great than 0.22.0"
+    dokku ps:set "$APP_NAME" restart-policy always
+  else
+    echo "lower than 0.22.0"
+    dokku ps:set-restart-policy "$APP_NAME" always
+  fi
 }
 
 fn-cleanup-app() {
@@ -208,6 +234,17 @@ fn-cleanup-plugin() {
   [[ -f "$DISCOURSE_APPS" ]] && rm "$DISCOURSE_APPS"
   [[ -d "$DISCOURSE_DOCKER_IMAGE_ROOT" ]] && rm -r "$DISCOURSE_DOCKER_IMAGE_ROOT"
   dokku_log_info1 "Cleaned up $PLUGIN_COMMAND_PREFIX plugin"
+}
+
+fn-get-dokku-version() {
+  local DOKKU_LIB_ROOT=${DOKKU_LIB_PATH:="/var/lib/dokku"}
+  local DOKKU_VERSION
+  if [[ -f "$DOKKU_LIB_ROOT/STABLE_VERSION" ]]; then
+    DOKKU_VERSION=$(cat "${DOKKU_LIB_ROOT}/STABLE_VERSION")
+  elif [[ -f "$DOKKU_LIB_ROOT/VERSION" ]]; then
+    DOKKU_VERSION=$(cat "${DOKKU_LIB_ROOT}/VERSION")
+  fi
+  echo "$DOKKU_VERSION"
 }
 
 fn-discourse-help-content() {

@@ -8,8 +8,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     name: Lint & run tests
+    strategy:
+      matrix:
+        dokku-version: ["v0.21.4", "v0.22.0"]
     steps:
       - uses: actions/checkout@v1
       - name: Install test tools
@@ -18,8 +21,10 @@ jobs:
         run: make lint
       - name: Install dokku
         run: |
-          wget https://raw.githubusercontent.com/dokku/dokku/v0.22.0/bootstrap.sh
-          sudo DOKKU_TAG=v0.22.0 bash bootstrap.sh
+          wget https://raw.githubusercontent.com/dokku/dokku/$DOKKU_VERSION/bootstrap.sh
+          sudo DOKKU_TAG="$DOKKU_VERSION" bash bootstrap.sh
+        env:
+          DOKKU_VERSION: ${{ matrix.dokku-version }}
       - name: Install discourse plugin
         run: |
           sudo dokku plugin:install file:///$(pwd) discourse
