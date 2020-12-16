@@ -3,6 +3,7 @@
 load test_helper
 
 @test "should create a new discourse app" {
+  echo "Deploying a new discourse app at $HOSTNAME"
   echo "127.0.0.1 $HOSTNAME" | sudo tee -a /etc/hosts
   dokku discourse:create "$APP_NAME" "$HOSTNAME" "$DEVELOPER_EMAILS" "$SMTP_ADDRESS" "$SMTP_PORT" "$SMTP_USER_NAME" "$SMTP_PASSWORD"
   grep -qxF "$(dokku apps:list 2> /dev/null)" <<< "$APP_NAME"
