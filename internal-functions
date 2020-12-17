@@ -208,10 +208,8 @@ fn-configure-app() {
 
   ## TODO: call plugin functions instead of dokku
   if fn-version-greater-equal "0.22.0"; then
-    echo "great than 0.22.0"
     dokku ps:set "$APP_NAME" restart-policy always
   else
-    echo "lower than 0.22.0"
     dokku ps:set-restart-policy "$APP_NAME" always
   fi
 }
