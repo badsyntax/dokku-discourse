@@ -182,13 +182,13 @@ fn-configure-app() {
   local RUN_ARGS MAC_ADDRESS SHM_SIZE ENV_VARS
   RUN_ARGS=$(fn-get-run-args "$APP_NAME" 2>&1)
 
-  echo "# RUN_ARGS: $RUN_ARGS" >&3
+  echo "# RUN_ARGS: $RUN_ARGS"
 
   MAC_ADDRESS=$(echo "$RUN_ARGS" | sed -r 's/.*--mac-address(=| )([^ ]+).*/\2/')
   SHM_SIZE=$(echo "$RUN_ARGS" | sed -r 's/.*--shm-size(=| )([^ ]+).*/\2/')
   ENV_VARS=$(echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | tr "\n" "\t" | sed -r "s/([\"']?\s*\-e\s*[\"']?)|(\s+)/ /g" | sed -r 's/^\s*|\s*$//g')
 
-  echo "# ENV_VARS: $ENV_VARS" >&3
+  echo "# ENV_VARS: $ENV_VARS"
 
   domains_set "$APP_NAME" "$HOSTNAME"
 
