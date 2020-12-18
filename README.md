@@ -7,11 +7,9 @@ Manages discourse apps on your dokku server.
 
 ## Plugin installation
 
-It's recommend to use [release tags](https://github.com/badsyntax/dokku-discourse/releases) instead of master.
-
 ```sh
 # For dokku >= v0.22.0
-dokku plugin:install https://github.com/badsyntax/dokku-discourse.git --committish 0.2.2
+dokku plugin:install https://github.com/badsyntax/dokku-discourse.git
 
 # For dokku < v0.22.0
 dokku plugin:install https://github.com/badsyntax/dokku-discourse.git --committish 0.2.1
@@ -20,7 +18,7 @@ dokku plugin:install https://github.com/badsyntax/dokku-discourse.git --committi
 ## Plugin update
 
 ```sh
-dokku plugin:update discourse RELEASE_TAG
+dokku plugin:update discourse
 ```
 
 ## Commands
