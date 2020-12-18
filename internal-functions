@@ -180,7 +180,7 @@ fn-get-env-vars-from-run-args() {
   # We want to extract the env vars from the string and produce a new string in form "ENV=var ENV2=var"
   # 1. We use grep to extract the "-e ENV=var" strings
   # 2. grep will give us newlines, so we convert those to spaces using tr
-  # 3. Next we use sed to remove "-e" flags as well as multiple consecutisssve whitespace chars
+  # 3. Next we use sed to remove "-e" flags as well as multiple consecutive whitespace chars
   # 4. Finally we use sed to trim leading and trailing spaces
   echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | tr "\n" "\t" | sed -r "s/\s+\-e\s+|\s+/ /g" | sed -r 's/^\s*|\s*$//g'
 }
