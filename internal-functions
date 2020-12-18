@@ -174,6 +174,17 @@ fn-upgrade-app() {
   fn-build-image "$APP_NAME"
 }
 
+fn-get-env-vars-from-run-args() {
+  declare RUN_ARGS="$1"
+  # RUN_ARGS will be a string in form "+ true run --shm-size=512m -d --restart=always -e LANG=en_US.UTF-8 -e RAILS_ENV=production" etc
+  # We want to extract the env vars from the string and produce a new string in form "ENV=var ENV2=var"
+  # 1. We use grep to extract the "-e ENV=var" strings
+  # 2. grep will give us newlines, so we convert those to spaces using tr
+  # 3. Next we use sed to remove "-e" flags as well as multple consecutive whitespace chars
+  # 4. Finally we use sed to trim leading and trailing spaces
+  echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | tr "\n" "\t" | sed -r "s/\s+\-e\s+|\s+/ /g" | sed -r 's/^\s*|\s*$//g'
+}
+
 fn-configure-app() {
   declare APP_NAME="$1" HOSTNAME="$2" APP_STORAGE_ROOT="$3"
 
@@ -186,7 +197,7 @@ fn-configure-app() {
 
   MAC_ADDRESS=$(echo "$RUN_ARGS" | sed -r 's/.*--mac-address(=| )([^ ]+).*/\2/')
   SHM_SIZE=$(echo "$RUN_ARGS" | sed -r 's/.*--shm-size(=| )([^ ]+).*/\2/')
-  ENV_VARS=$(echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | tr "\n" "\t" | sed -r "s/([\"']?\s*\-e\s*[\"']?)|(\s+)/ /g" | sed -r 's/^\s*|\s*$//g')
+  ENV_VARS=$(fn-get-env-vars-from-run-args "$RUN_ARGS")
 
   echo "# ENV_VARS: $ENV_VARS"
 
