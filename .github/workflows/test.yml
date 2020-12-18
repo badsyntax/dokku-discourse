@@ -31,4 +31,5 @@ jobs:
       - name: Run tests
         run: sudo make test
         env:
-          HOSTNAME: "an-engine.com"
+          # "an-engine" is used to test the env var parsing logic (-e), see issue #13
+          HOSTNAME: "an-engine.discourse.dokku.me"
