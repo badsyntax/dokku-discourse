@@ -31,4 +31,4 @@ jobs:
       - name: Run tests
         run: sudo make test
         env:
-          HOSTNAME: "discourse-test.dokku.me"
+          HOSTNAME: "an-engine.com"
