@@ -84,15 +84,16 @@ fn-update-discourse-container-config() {
     SMTP_PORT="$6" \
     SMTP_USER_NAME="$7" \
     SMTP_PASSWORD="$8"
-
-  fn-update-discourse-config-env \
-    "$APP_NAME" \
-    "$HOSTNAME" \
-    "$DEVELOPER_EMAILS" \
-    "$SMTP_ADDRESS" \
-    "$SMTP_PORT" \
-    "$SMTP_USER_NAME" \
-    "$SMTP_PASSWORD"
+  if [ "$DEVELOPER_EMAILS" != "--skip-env-config" ]; then
+    fn-update-discourse-config-env \
+      "$APP_NAME" \
+      "$HOSTNAME" \
+      "$DEVELOPER_EMAILS" \
+      "$SMTP_ADDRESS" \
+      "$SMTP_PORT" \
+      "$SMTP_USER_NAME" \
+      "$SMTP_PASSWORD"
+  fi
 
   fn-update-discourse-config-set-volumes "$APP_NAME" "$APP_STORAGE_ROOT"
 
@@ -179,10 +180,12 @@ fn-get-env-vars-from-run-args() {
   # RUN_ARGS will be a string in form "+ true run --shm-size=512m -d --restart=always -e LANG=en_US.UTF-8 -e RAILS_ENV=production" etc
   # We want to extract the env vars from the string and produce a new string in form "ENV=var ENV2=var"
   # 1. We use grep to extract the "-e ENV=var" strings
-  # 2. grep will give us newlines, so we convert those to spaces using tr
-  # 3. Next we use sed to remove "-e" flags as well as multiple consecutive whitespace chars
-  # 4. Finally we use sed to trim leading and trailing spaces
-  echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | tr "\n" "\t" | sed -r "s/\s+\-e\s+|\s+/ /g" | sed -r 's/^\s*|\s*$//g'
+  # 2. Next we use sed to remove "-e" flags
+  # 3. Then we use sed to remove leading and trailing single quote if exists (docker env escaping strategy)
+  # 4. grep will give us newlines, so we convert those to spaces using tr
+  # 5. Finally we use sed to trim leading and trailing spaces
+  echo "$RUN_ARGS" | grep -Po '[[:space:]]-e[[:space:]]*[^[:space:]]+' | sed -r "s/\s+\-e\s+//g" | sed -r 's/^\x27|\x27$//g' | tr '\n' ' ' | sed -r 's/^\s*|\s*$//g'
+
 }
 
 fn-configure-app() {
