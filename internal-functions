@@ -31,7 +31,7 @@ fn-update-discourse-build-files() {
   if [[ -d "$DISCOURSE_DOCKER_IMAGE_ROOT" ]]; then
     cd "$DISCOURSE_DOCKER_IMAGE_ROOT"
     dokku_log_info1 "Updating the discourse image build files"
-    git pull origin master
+    git pull origin main
   else
     dokku_log_info1 "Cloning the discourse image build files"
     git clone https://github.com/discourse/discourse_docker.git "$DISCOURSE_DOCKER_IMAGE_ROOT"
