@@ -57,6 +57,9 @@ A discourse container config file is created when a discourse app is created. Th
 
 You can edit the config at `/home/dokku/APP_NAME/discourse_standalone.yml`. Don't make any changes to the `volumes` section, but feel free to change anything else.
 
+Warning: The env part is overrided by dokku-discourse plugin. If you want to use custom configuration, and skip this override, please use the following syntaxe :
+`dokku discourse:create <app> <hostname to listen> --skip-env-config`
+
 After making change be sure to run `dokku discourse:create <app>` to rebuild and re-deploy the discourse app.
 
 ### Upgrade a discourse app
